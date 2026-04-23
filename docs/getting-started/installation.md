@@ -72,7 +72,7 @@ app = FletXApp().run()
 
 Before installing FletX, make sure you have:
 
-- **Python >=3.10,<=3.13** ([download here](https://www.python.org/downloads/))
+- **Python >=3.10,<3.14** ([download here](https://www.python.org/downloads/))
 - **A package manager**: 
   - `pip` (comes with Python)
   - `uv` (recommended, faster): `pip install uv`
@@ -95,8 +95,8 @@ pip install fletxr[dev]
 
 > ✅ This installs both Flet and FletX. The `[dev]` extras include development tools.
 >
-> 💡 Using `uv`? Run: `uv pip install fletxr[dev]`
-
+💡 Using `uv`? Run: `uv pip install fletxr[dev]`
+> 
 ### Step 2: Verify Installation
 
 Test that everything works:
@@ -254,14 +254,14 @@ my_app/
 
 **Key directories:**
 
-| Directory | Purpose |
-|-----------|---------|
+| Directory      | Purpose                                                            |
+|----------------|--------------------------------------------------------------------|
 | `controllers/` | Manage app state using reactive variables (`RxInt`, `RxStr`, etc.) |
-| `pages/` | Define UI pages using `FletXPage` |
-| `services/` | Shared business logic (database, API calls, authentication) |
-| `components/` | Reusable UI widgets you build from Flet controls |
-| `models/` | Data classes and structures |
-| `routes.py` | Define all app routes in one place |
+| `pages/`       | Define UI pages using `FletXPage`                                  |
+| `services/`    | Shared business logic (database, API calls, authentication)        |
+| `components/`  | Reusable UI widgets you build from Flet controls                   |
+| `models/`      | Data classes and structures                                        |
+| `routes.py`    | Define all app routes in one place                                 |
 
 ---
 
