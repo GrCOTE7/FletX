@@ -13,7 +13,7 @@ class HomePage(FletXPage):
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
                 ft.Container(height=100),
-                ft.Image(src="logo.png", fit=ft.BoxFit.CONTAIN, width=120, height=120),
+                ft.Image(src="../fletx_t.png", fit=ft.BoxFit.CONTAIN, width=277),
                 ft.Container(
                     expand=True,
                     alignment=ft.Alignment.CENTER,
