@@ -12,7 +12,7 @@ async def main(page: ft.Page, width: int = 392):
     # gc7(page, mode="LIGHT", name="Cookbook", width=900, height=700)
     # gc7(page, width=976)
     # gc7(page, mode="LIGHT", width=width)
-    gc7(page)
+    gc7(page, left=1520)
 
     ################################## Routing #################################
     # from routing.template import main

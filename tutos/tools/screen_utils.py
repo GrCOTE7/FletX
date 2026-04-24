@@ -124,11 +124,12 @@ def gc7_rules(
     page: ft.Page,
     mode: str = "DARK",
     name: str = "Ready",
+    left: int = 1520,  # 1912 - 392
     width: int = 392,
     height: int = 1088,
     defaultColors: bool = True,
 ) -> None:
-    configure_window(page, width=width, height=height)
+    configure_window(page, left=left, width=width, height=height)
     page.theme_mode = ft.ThemeMode.LIGHT if mode == "LIGHT" else ft.ThemeMode.DARK
     page.title = f"GC7 - {name}"
     if defaultColors:
