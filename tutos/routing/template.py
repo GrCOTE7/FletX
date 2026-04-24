@@ -2,8 +2,8 @@ import flet as ft
 
 
 def main(page: ft.Page):
-    page.title = "FletX Dynamic Routing"
-    # page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.title = "Flet Template"
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
     page.add(
         ft.Row(
@@ -11,7 +11,7 @@ def main(page: ft.Page):
             margin=ft.Margin.only(top=25),
             controls=[
                 ft.Text(
-                    "ROUTING.",
+                    "FLET TEMPLATE",
                     size=30,
                     color=ft.Colors.CYAN_400,
                     weight=ft.FontWeight.BOLD,

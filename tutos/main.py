@@ -12,7 +12,9 @@ async def main(page: ft.Page, width: int = 392):
     # gc7(page, mode="LIGHT", name="Cookbook", width=900, height=700)
     # gc7(page, mode="LIGHT", width=width)
 
+    # from routing.template import main
     from routing.main import main
+
     main(page)
 
     # from basis.scroll_example import main as scroll
