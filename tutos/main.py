@@ -12,7 +12,10 @@ async def main(page: ft.Page, width: int = 392):
     # gc7(page, mode="LIGHT", name="Cookbook", width=900, height=700)
     # gc7(page, width=976)
     # gc7(page, mode="LIGHT", width=width)
-    gc7(page, left=1520)
+    
+    left = "Activer pour App sur la droite d'1 écran unique"
+    
+    gc7(page, left=1520 if "left" in locals() else 1912, width=width)
 
     ################################## Routing #################################
     # from routing.template import main
