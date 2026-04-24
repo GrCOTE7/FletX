@@ -12,8 +12,8 @@ async def main(page: ft.Page, width: int = 392):
     # gc7(page, mode="LIGHT", name="Cookbook", width=900, height=700)
     # gc7(page, mode="LIGHT", width=width)
 
-    # from examples.lv00_matrice import main as go
-    # go(page)
+    from routing.main import main
+    main(page)
 
     # from basis.scroll_example import main as scroll
     # scroll(page)
