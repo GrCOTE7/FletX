@@ -1,79 +1,55 @@
 import flet as ft
-from fletx.core import (
-    FletXPage
-)
+from fletx.core import FletXPage
 from fletx.navigation import go_back
+
 
 class NotFoundPage(FletXPage):
     """Default 404 template"""
 
     def __init__(self):
         super().__init__()
-    
+
     def build(self):
         return ft.Column(
-            spacing = 10,
-            expand = True,
-            alignment = ft.MainAxisAlignment.CENTER,
-            horizontal_alignment = ft.CrossAxisAlignment.CENTER,
-            controls = [
-                ft.Container(
-                    expand = True
-                ),
+            spacing=10,
+            expand=True,
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Container(expand=True),
                 ft.Row(
-                    spacing = 0,
-                    alignment = ft.MainAxisAlignment.CENTER,
-                    controls = [
-                        ft.Text(
-                            value = f'4',
-                            size = 100, 
-                            weight = ft.FontWeight.BOLD
-                        ),
+                    spacing=0,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    controls=[
+                        ft.Text(value=f"4", size=100, weight=ft.FontWeight.BOLD),
                         # LOGO USED AS 0
                         ft.Image(
-                            src = 'logo.png',
-                            fit = ft.ImageFit.CONTAIN,
-                            width = 120,
-                            height = 120
+                            src="logo.png", fit=ft.BoxFit.CONTAIN, width=120, height=120
                         ),
-                        ft.Text(
-                            value = f'4',
-                            size = 100, 
-                            weight = ft.FontWeight.BOLD
-                        ),
-                    ]
-                ),
-
-                ft.Text(
-                    'PAGE NOT FOUND',
-                    size = 30,
+                        ft.Text(value=f"4", size=100, weight=ft.FontWeight.BOLD),
+                    ],
                 ),
                 ft.Text(
-                    'The page you were looking for could not be found.',
-                    size = 14,
-                    text_align = ft.TextAlign.CENTER
+                    "PAGE NOT FOUND",
+                    size=30,
                 ),
-
-                ft.Container(       # SPACER
-                    height = 20
+                ft.Text(
+                    "The page you were looking for could not be found.",
+                    size=14,
+                    text_align=ft.TextAlign.CENTER,
                 ),
-
+                ft.Container(height=20),  # SPACER
                 # GOBACK BUTTON
                 ft.ElevatedButton(
                     "Go back",
-                    icon = ft.Icons.ARROW_BACK_IOS,
-                    on_click=lambda e: go_back()
+                    icon=ft.Icons.ARROW_BACK_IOS,
+                    on_click=lambda e: go_back(),
                 ),
-
-                ft.Container(       # SPACER
-                    expand = True
+                ft.Container(expand=True),  # SPACER
+                ft.Text("🚀 powered by FletX 0.1.4", color=ft.Colors.GREY_600),
+                ft.Text("Python version 3.13", color=ft.Colors.GREY_600),
+                ft.Container(  # SPACER
+                    height=50,
                 ),
-
-                ft.Text('🚀 powered by FletX 0.1.4',color = ft.Colors.GREY_600),
-                ft.Text('Python version 3.13', color = ft.Colors.GREY_600),
-                
-                ft.Container(       # SPACER
-                    height = 50,
-                ),
-            ]
+            ],
         )

@@ -4,13 +4,14 @@ FletX main entry point
 
 import inspect
 import atexit
+import asyncio
 import flet as ft
-from typing import (
-    Dict, Optional, Callable, Any, Union, List
-)
+from urllib.parse import urlparse
+from typing import Dict, Optional, Callable, Any, Union, List
 
-from fletx.core.routing.models import NavigationMode
+from fletx.core.routing.models import NavigationMode, NavigationResult
 from fletx.core.routing.router import FletXRouter
+
 # from fletx.core.factory import FletXWidgetRegistry
 from fletx.utils.logger import SharedLogger
 from fletx.utils.context import AppContext
@@ -23,11 +24,11 @@ from fletx.core.concurency.event_loop import EventLoopManager
 #####
 class FletXApp:
     """FletX Application class with async/sync support"""
-    
+
     def __init__(
-        self, 
+        self,
         initial_route: str = "/",
-        navigation_mode: NavigationMode = NavigationMode.VIEWS,
+        navigation_mode: NavigationMode = NavigationMode.HYBRID,
         theme_mode: ft.ThemeMode = ft.ThemeMode.SYSTEM,
         debug: bool = False,
         title: str = "FletX App",
@@ -37,11 +38,11 @@ class FletXApp:
         on_startup: Optional[Union[Callable, List[Callable]]] = None,
         on_shutdown: Optional[Union[Callable, List[Callable]]] = None,
         on_system_exit: Optional[Union[Callable, List[Callable]]] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize the FletX application with enhanced configuration
-        
+
         Args:
             initial_route: Initial route path
             navigation_mode: router navigation mode (NATIVE, HYBRID, VIEWS)
@@ -79,10 +80,7 @@ class FletXApp:
         self._loop_manager = EventLoopManager()
 
         # Initialization of the shared logger
-        SharedLogger._initialize_logger(
-            name = 'FletX',
-            debug = debug
-        )
+        SharedLogger._initialize_logger(name="FletX", debug=debug)
         self.logger = SharedLogger.get_logger(__name__)
 
     @property
@@ -90,50 +88,59 @@ class FletXApp:
         """Check if app is initialized"""
 
         return self._is_initialized
-    
+
     @property
     def page(self) -> Optional[ft.Page]:
         """Get current page (if available)"""
 
         return self._page
-        
+
     def _normalize_hooks(
-        self, 
-        hooks: Optional[Union[Callable, List[Callable]]]
+        self, hooks: Optional[Union[Callable, List[Callable]]]
     ) -> List[Callable]:
         """Normalize hooks to a list format"""
 
         if hooks is None:
             return []
-        
+
         elif callable(hooks):
             return [hooks]
-        
+
         elif isinstance(hooks, list):
             return hooks
-        
+
         else:
-            raise ValueError(
-                "Hooks must be callable or list of callables"
-            )
-        
+            raise ValueError("Hooks must be callable or list of callables")
+
     def add_startup_hook(self, hook: Callable):
         """Add a startup hook"""
 
         self.on_startup.append(hook)
         return self
-    
+
     def add_shutdown_hook(self, hook: Callable):
         """Add a shutdown hook"""
 
         self.on_shutdown.append(hook)
         return self
-    
+
+    def _execute_hooks_safely(self, hooks: List[Callable], context: str) -> None:
+        """Run hooks on the active loop when available, fallback to loop manager."""
+
+        coro = self._execute_hooks(hooks, context)
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            self._loop_manager.run_until_complete(coro)
+            return
+
+        loop.create_task(coro)
+
     def attach_on_shutdown_hooks(self):
         """Add on Shutdown hooks to the page close event."""
 
-        self.page.on_close = lambda: self._loop_manager.run_until_complete(
-            self._execute_hooks(self.on_shutdown, "shutdown")
+        self.page.on_close = lambda: self._execute_hooks_safely(
+            self.on_shutdown, "shutdown"
         )
         atexit.register(self.handle_sysem_exit_signal)
 
@@ -141,24 +148,15 @@ class FletXApp:
         """handle system exit signals and call handlers"""
 
         # Just execute on_system_exit_hooks
-        self._loop_manager.run_until_complete(
-            self._execute_hooks(
-                self.on_system_exit,
-                'on_system_exit'
-            )
-        )
-    
+        self._execute_hooks_safely(self.on_system_exit, "on_system_exit")
+
     def configure_window(self, **config):
         """Configure window properties"""
 
         self.window_config.update(config)
         return self
-    
-    def configure_theme(
-        self, 
-        theme: ft.Theme = None, 
-        dark_theme: ft.Theme = None
-    ):
+
+    def configure_theme(self, theme: ft.Theme = None, dark_theme: ft.Theme = None):
         """Configure application themes"""
 
         # Light Theme
@@ -169,12 +167,8 @@ class FletXApp:
         if dark_theme:
             self.dark_theme = dark_theme
         return self
-    
-    async def _execute_hooks(
-        self, 
-        hooks: List[Callable], 
-        context: str = ""
-    ):
+
+    async def _execute_hooks(self, hooks: List[Callable], context: str = ""):
         """Execute hooks with async/sync support"""
 
         for hook in hooks:
@@ -186,14 +180,10 @@ class FletXApp:
                 # Non coroutine function
                 else:
                     hook(self._page)
-                self.logger.debug(
-                    f"Executed {context} hook: {hook.__name__}"
-                )
+                self.logger.debug(f"Executed {context} hook: {hook.__name__}")
 
             except Exception as e:
-                self.logger.error(
-                    f"Error in {context} hook {hook.__name__}: {e}"
-                )
+                self.logger.error(f"Error in {context} hook {hook.__name__}: {e}")
 
     def _configure_page(self, page: ft.Page):
         """Configure the Flet page"""
@@ -201,13 +191,13 @@ class FletXApp:
         # Basic configuration
         page.title = self.title
         page.theme_mode = self.theme_mode
-        
+
         # Theme configuration
         if self.theme:
             page.theme = self.theme
         if self.dark_theme:
             page.dark_theme = self.dark_theme
-            
+
         # Window configuration
         for key, value in self.window_config.items():
             if hasattr(page.window, key):
@@ -219,31 +209,74 @@ class FletXApp:
         """Async main entry point"""
 
         self._page = page
-        
+
         try:
             # Configure page
             self._configure_page(page)
-            
+
             # Execute startup hooks
             await self._execute_hooks(self.on_startup, "startup")
-            
+
             # Register widgets (if needed)
             # FletXWidgetRegistry.register_all(page)
-            
+
             # Initialize App Context
             AppContext.initialize(page, self.debug)
             AppContext.set_data("logger", self.logger)
             AppContext.set_data("app", self)
-            AppContext.set_data("event_loop", self._loop_manager.loop)
-            
-            # Initialize Router
-            FletXRouter.initialize(
-                page, initial_route = self.initial_route
-            ).set_navigation_mode(self.navigation_mode)
-            
+            try:
+                AppContext.set_data("event_loop", asyncio.get_running_loop())
+            except RuntimeError:
+                AppContext.set_data("event_loop", self._loop_manager.loop)
+
+            # Initialize Router and await first navigation to avoid blank first render.
+            router = FletXRouter.initialize(
+                page,
+                initial_route=self.initial_route,
+                auto_navigate=False,
+            )
+            router.set_navigation_mode(self.navigation_mode)
+            # Respect browser URL on first load; fallback to configured initial route.
+            startup_route = self.initial_route
+
+            # In web mode, some runtimes initialize page.route to '/'
+            # even when the browser path is a deep link.
+            browser_path = None
+            page_url = getattr(page, "url", None)
+            if page_url:
+                try:
+                    browser_path = urlparse(page_url).path
+                except Exception:
+                    browser_path = None
+
+            if page.route and page.route != "/":
+                startup_route = page.route
+            elif browser_path and browser_path != "/":
+                startup_route = browser_path
+
+            self.logger.debug(
+                "Startup routing: page.route=%s page.url=%s -> startup_route=%s",
+                page.route,
+                page_url,
+                startup_route,
+            )
+
+            first_nav_result = await router.navigate(startup_route, replace=True)
+            if first_nav_result != NavigationResult.SUCCESS and not page.controls:
+                page.add(
+                    ft.Text(
+                        f"Navigation Error: {first_nav_result.value}",
+                        color=ft.Colors.RED,
+                    )
+                )
+                page.update()
+
+            # Ensure shutdown/system-exit hooks are attached in both sync and async run paths.
+            self.attach_on_shutdown_hooks()
+
             self._is_initialized = True
             self.logger.info("FletX Application initialized successfully (async mode)")
-            
+
         except Exception as e:
             self.logger.error(f"Error initializing FletX App: {e}")
             page.add(ft.Text(f"Initialization Error: {e}", color=ft.Colors.RED))
@@ -252,127 +285,98 @@ class FletXApp:
         """Sync main entry point"""
 
         try:
-            self._loop_manager.run_until_complete(
-                self._async_main(page)
-            )
-            self.attach_on_shutdown_hooks()
+            self._loop_manager.run_until_complete(self._async_main(page))
         except Exception as e:
-            self.logger.error(f'Error when trying to run App: {e}')
+            self.logger.error(f"Error when trying to run App: {e}")
 
         # finally:
-            # Execute shutdown hooks
-            # if self.on_shutdown:
-            #     self._loop_manager.run_until_complete(
-            #         self._execute_hooks(self.on_shutdown, "shutdown")
-            #     )
-            # self._loop_manager.close_loop()
+        # Execute shutdown hooks
+        # if self.on_shutdown:
+        #     self._loop_manager.run_until_complete(
+        #         self._execute_hooks(self.on_shutdown, "shutdown")
+        #     )
+        # self._loop_manager.close_loop()
 
     def _main(self, page: ft.Page):
         """Main entry point (backward compatibility)"""
 
         self._sync_main(page)
-    
+
     def create_main_handler(self) -> Callable:
         """Create a main handler for ft.app()"""
 
         return self._sync_main
-    
+
     def create_async_main_handler(self) -> Callable:
         """Create an async main handler"""
 
         return self._async_main
-        
+
     def run(self, **kwargs):
         """Run the application (sync mode)"""
 
         merged_kwargs = {**self.flet_kwargs, **kwargs}
-        ft.app(target=self._sync_main, **merged_kwargs)
+        ft.run(self._sync_main, **merged_kwargs)
 
     def run_async(self, **kwargs):  # noqa: F811
         """Run the application (async mode)"""
 
-        def async_wrapper(page):
-
-            try:
-                self._loop_manager.run_until_complete(self._async_main(page))
-                self.attach_on_shutdown_hooks()
-            except Exception as e:
-                self.logger.error(f'Error when trying to run App: {e}')
-            # finally:
-            #     if self.on_shutdown:
-            #         self._loop_manager.run_until_complete(
-            #             self._execute_hooks(self.on_shutdown, "shutdown")
-            #         )
-                # self._loop_manager.close_loop()
-        
         merged_kwargs = {**self.flet_kwargs, **kwargs}
-        ft.app(target = async_wrapper, **merged_kwargs)
+        ft.run(self._async_main, **merged_kwargs)
 
-    def run_web(
-        self, 
-        host: str = "localhost", 
-        port: int = 8000, **kwargs
-    ):
+    def run_web(self, host: str = "localhost", port: int = 8000, **kwargs):
         """Run as web application"""
 
         merged_kwargs = {**self.flet_kwargs, **kwargs}
-        ft.app(
-            target = self._sync_main, 
-            view = ft.WEB_BROWSER, 
-            host = host, 
-            port = port, 
-            **merged_kwargs
+        ft.run(
+            self._sync_main,
+            view=ft.AppView.WEB_BROWSER,
+            host=host,
+            port=port,
+            **merged_kwargs,
         )
-    
+
     def run_desktop(self, **kwargs):
         """Run as desktop application"""
 
         merged_kwargs = {**self.flet_kwargs, **kwargs}
-        ft.app(
-            target = self._sync_main, 
-            view = ft.FLET_APP, 
-            **merged_kwargs
-        )
+        ft.run(self._sync_main, view=ft.AppView.FLET_APP, **merged_kwargs)
 
-    def get_context_data(
-        self, 
-        key: str, 
-        default: Any = None
-    ) -> Any:
+    def get_context_data(self, key: str, default: Any = None) -> Any:
         """Get data from app context"""
 
         return AppContext.get_data(key, default)
-    
+
     def set_context_data(self, key: str, value: Any):
         """Set data in app context"""
 
         AppContext.set_data(key, value)
-    
+
     # Fluent interface methods
     def with_title(self, title: str):
         """Set application title (fluent)"""
 
         self.title = title
         return self
-    
+
     def with_theme(self, theme: ft.Theme):
         """Set light theme (fluent)"""
 
         self.theme = theme
         return self
-    
+
     def with_dark_theme(self, dark_theme: ft.Theme):
         """Set dark theme (fluent)"""
 
         self.dark_theme = dark_theme
         return self
-    
+
     def with_window_size(self, width: int, height: int):
         """Set window size (fluent)"""
 
         self.window_config.update({"width": width, "height": height})
         return self
-    
+
     def with_debug(self, debug: bool = True):
         """Enable/disable debug mode (fluent)"""
 

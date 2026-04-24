@@ -7,7 +7,13 @@ authors = [{ name = "Developer" }]
 requires-python = ">=3.13"
 
 # Dependencies
-dependencies = ["fletxr", "flet==0.28.3"]
+dependencies = [
+  "fletxr",
+  "flet==0.84.0",
+  "flet-cli==0.84.0",
+  "flet-desktop==0.84.0",
+  "flet-web==0.84.0",
+]
 
 [tool.uv.sources]
 fletxr = { path = "..", editable = true }
