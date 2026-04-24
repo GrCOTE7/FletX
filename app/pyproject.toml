@@ -1,0 +1,13 @@
+[project]
+name = "demo_app"
+version = "0.1.0"
+description = "None"
+readme = "README.md"
+authors = [{ name = "Developer" }]
+requires-python = ">=3.13"
+
+# Dependencies
+dependencies = ["fletxr", "flet==0.28.3"]
+
+[tool.uv.sources]
+fletxr = { path = "..", editable = true }
