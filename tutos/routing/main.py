@@ -1,25 +1,37 @@
-import flet as ft
+import sys
+from pathlib import Path
+
+# Ensure this file's directory is on sys.path so 'views' is always found.
+sys.path.insert(0, str(Path(__file__).parent))
+
+from fletx.app import FletXApp
+from fletx.navigation import ModuleRouter
+from fletx.decorators import register_router
+
+from views.home import HomePage
+from views.about import AboutPage
 
 
-def main(page: ft.Page):
-    page.title = "FletX Dynamic Routing"
-    # page.vertical_alignment = ft.MainAxisAlignment.CENTER
+@register_router
+class RoutingDemoRouter(ModuleRouter):
+    name = "routing_demo"
+    base_path = "/"
+    is_root = True
+    routes = [
+        {"path": "/", "component": HomePage},
+        {"path": "/about", "component": AboutPage},
+    ]
+    sub_routers = []
 
-    page.add(
-        ft.Row(
-            alignment=ft.MainAxisAlignment.CENTER,
-            margin=ft.Margin.only(top=25),
-            controls=[
-                ft.Text(
-                    "ROUTING.",
-                    size=30,
-                    color=ft.Colors.CYAN_400,
-                    weight=ft.FontWeight.BOLD,
-                )
-            ],
-        )
+
+def run_app():
+    app = FletXApp(
+        title="FletX Routing Demo",
+        initial_route="/",
+        debug=True,
     )
+    app.run_async()
 
 
 if __name__ == "__main__":
-    ft.run(main)
+    run_app()
