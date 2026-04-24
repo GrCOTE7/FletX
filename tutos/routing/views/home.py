@@ -31,6 +31,11 @@ class HomePage(FletXPage):
                                 size=14,
                             ),
                             ft.Container(height=20),
+                            ft.TextField(
+                                label="Your name ?",
+                                width=250,
+                            ),
+                            ft.Container(height=5),
                             ft.Button(
                                 "Go to About",
                                 icon=ft.Icons.INFO_OUTLINE,
