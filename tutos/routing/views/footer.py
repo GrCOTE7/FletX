@@ -18,11 +18,11 @@ class Footer(ft.Container):
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
                     ft.Text(
-                        f"🚀 powered by FletX {fletx_version}",
+                        f"🚀 Powered by FletX {fletx_version}",
                         color=ft.Colors.GREY_600,
                     ),
                     ft.Text(
-                        f"Flet {ft.__version__} - Python {python_version}",
+                        f"Flet {ft.__version__} & Python {python_version}",
                         color=ft.Colors.GREY_600,
                     ),
                 ],
