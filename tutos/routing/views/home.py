@@ -6,6 +6,16 @@ from views.footer import Footer
 
 class HomePage(FletXPage):
     def build(self):
+        self._name = ""
+
+        def on_name_change(e):
+            self._name = e.control.value
+
+        self._name_field = ft.TextField(
+            label="Your name ?",
+            width=250,
+            on_change=on_name_change,
+        )
         return ft.Column(
             spacing=10,
             expand=True,
@@ -31,15 +41,15 @@ class HomePage(FletXPage):
                                 size=14,
                             ),
                             ft.Container(height=20),
-                            ft.TextField(
-                                label="Your name ?",
-                                width=250,
-                            ),
+                            self._name_field,
                             ft.Container(height=5),
                             ft.Button(
                                 "Go to About",
                                 icon=ft.Icons.INFO_OUTLINE,
-                                on_click=lambda e: navigate("/about"),
+                                on_click=lambda e: navigate(
+                                    "/about",
+                                    data={"name": self._name or ""},
+                                ),
                                 style=ft.ButtonStyle(
                                     shape=ft.RoundedRectangleBorder(radius=7)
                                 ),

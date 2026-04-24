@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+from pathspec import GitIgnoreSpec
+
 # Ensure this file's directory is on sys.path so 'views' is always found.
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -12,7 +14,7 @@ from views.home import HomePage
 from views.about import AboutPage
 
 
-@register_router
+@register_router # type: ignore
 class RoutingDemoRouter(ModuleRouter):
     name = "routing_demo"
     base_path = "/"

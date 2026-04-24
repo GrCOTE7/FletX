@@ -6,6 +6,13 @@ from views.footer import Footer
 
 class AboutPage(FletXPage):
     def build(self):
+        name = (self.route_info.data or {}).get("name", "") if self.route_info else ""
+        greeting = ft.Text(
+            f"Hello, {name} !" if name else "",
+            size=22,
+            weight=ft.FontWeight.W_600,
+            color=ft.Colors.BLUE_400,
+        )
         return ft.Column(
             spacing=10,
             expand=True,
@@ -17,6 +24,8 @@ class AboutPage(FletXPage):
                 ft.Container(height=20),
                 ft.Text("About", size=30, weight=ft.FontWeight.BOLD),
                 ft.Container(height=10),
+                greeting,
+                ft.Container(height=8),
                 ft.Text(
                     "FletX Routing Demo",
                     size=18,
