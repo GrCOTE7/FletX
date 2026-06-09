@@ -1,3 +1,3 @@
 # Core dependencies
-flet>=0.84.0
+flet>=0.85.0
 fletxr=={{ fletx_version }}

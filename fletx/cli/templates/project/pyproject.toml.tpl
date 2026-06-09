@@ -9,5 +9,5 @@ requires-python = ">={{ python_version }}"
 # Dependencies
 dependencies = [
     "fletxr=={{ fletx_version }}",
-    "flet>=0.84.0",
+    "flet>=0.85.0",
 ]

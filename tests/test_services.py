@@ -5,7 +5,14 @@ import importlib.util
 
 
 def _load_services_and_deps():
-    # Stub minimal 'fletx.utils' and 'fletx.utils.exceptions' and 'fletx.core.state' and 'fletx.core.http'
+    # Save any existing fletx modules so we can restore them
+    _saved = {}
+    for _key in ("fletx", "fletx.utils", "fletx.utils.exceptions",
+                  "fletx.core.state", "fletx.core.http"):
+        if _key in sys.modules:
+            _saved[_key] = sys.modules[_key]
+
+    # Stub minimal deps if not already loaded
     if "fletx" not in sys.modules:
         sys.modules["fletx"] = types.ModuleType("fletx")
 
@@ -73,7 +80,6 @@ def _load_services_and_deps():
             self._value = v
 
         def listen(self, callback, auto_dispose=True):
-            # stub
             class Observer:
                 def dispose(self):
                     pass
@@ -110,6 +116,14 @@ def _load_services_and_deps():
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     spec.loader.exec_module(module)
+
+    # Restore original modules so other tests are not affected
+    sys.modules.update(_saved)
+    for _key in ("fletx", "fletx.utils", "fletx.utils.exceptions",
+                  "fletx.core.state", "fletx.core.http"):
+        if _key not in _saved and _key in sys.modules:
+            del sys.modules[_key]
+
     return module.FletXService, module.ServiceState, module.HTTPClient
 
 

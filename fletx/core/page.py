@@ -84,6 +84,9 @@ class FletXPage(ft.Container, ABC):
         self._render_times: List[float] = []
         self._max_render_history = 10
         
+        # Dialog state
+        self._current_dialog: Optional[ft.AlertDialog] = None
+
         # Reactive properties
         self._reactive_subscriptions: List[Any] = []
         self._child_pages: weakref.WeakSet = weakref.WeakSet()
@@ -306,6 +309,7 @@ class FletXPage(ft.Container, ABC):
     def did_unmount(self):
         """Called when the page has been unmounted"""
 
+        self.close_dialog()
         self._state = PageState.DISPOSED
         self._is_mounted = True
         self._effects.dispose()
@@ -632,18 +636,117 @@ class FletXPage(ft.Container, ABC):
         self.page_instance.open(bts)
 
     def show_loader(
-        self, 
-        content: Optional[ft.Control] = None, 
+        self,
+        content: Optional[ft.Control] = None,
         on_dismiss: Optional[Callable[[ft.ControlEvent], Any]] = None
     ):
-        """Show a given content in a ft.AlertDialog"""
+        """Show a loading dialog with a ProgressRing (or custom content)."""
 
         dialog = ft.AlertDialog(
-            content = content if content else ft.ProgressRing(),
-            on_dismiss = on_dismiss
+            modal=True,
+            content=content if content else ft.ProgressRing(),
+            on_dismiss=on_dismiss,
         )
+        self._current_dialog = dialog
         self.page_instance.open(dialog)
-    
+
+    def hide_loader(self):
+        """Close the loader dialog if it is open."""
+
+        self.close_dialog()
+
+    def show_dialog(
+        self,
+        dialog: ft.AlertDialog,
+    ):
+        """
+        Show any AlertDialog.
+        Tracks it internally for lifecycle-aware auto-close on unmount.
+        """
+
+        self._current_dialog = dialog
+        self.page_instance.open(dialog)
+
+    def close_dialog(self):
+        """Close the currently tracked dialog."""
+
+        if self._current_dialog:
+            self.page_instance.close(self._current_dialog)
+            self._current_dialog = None
+
+    def alert(
+        self,
+        title: str,
+        message: str,
+        on_dismiss: Optional[Callable[[ft.ControlEvent], Any]] = None,
+    ):
+        """Show a simple alert dialog with a single OK button."""
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(title),
+            content=ft.Text(message),
+            actions=[
+                ft.TextButton("OK", on_click=lambda _: self.close_dialog()),
+            ],
+            on_dismiss=on_dismiss,
+        )
+        self.show_dialog(dialog)
+
+    def confirm(
+        self,
+        title: str,
+        message: str,
+        on_confirm: Optional[Callable[[ft.ControlEvent], Any]] = None,
+        on_cancel: Optional[Callable[[ft.ControlEvent], Any]] = None,
+        confirm_text: str = "Confirm",
+        cancel_text: str = "Cancel",
+    ):
+        """Show a confirmation dialog with confirm/cancel buttons."""
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(title),
+            content=ft.Text(message),
+            actions=[
+                ft.TextButton(
+                    cancel_text,
+                    on_click=lambda e: (
+                        self.close_dialog(),
+                        on_cancel(e) if on_cancel else None,
+                    ),
+                ),
+                ft.FilledButton(
+                    confirm_text,
+                    on_click=lambda e: (
+                        self.close_dialog(),
+                        on_confirm(e) if on_confirm else None,
+                    ),
+                ),
+            ],
+        )
+        self.show_dialog(dialog)
+
+    def show_snack_bar(
+        self,
+        content: Union[str, ft.Control],
+        action: Optional[str] = None,
+        action_on_click: Optional[Callable[[ft.ControlEvent], Any]] = None,
+        duration: Optional[int] = None,
+    ):
+        """Show a SnackBar notification."""
+
+        if isinstance(content, str):
+            content = ft.Text(content)
+
+        snack = ft.SnackBar(
+            content=content,
+            action=action,
+            action_on_click=action_on_click,
+            duration=duration,
+        )
+        self.page_instance.open(snack)
+
     def refresh(self):
         """Refresh the page"""
 

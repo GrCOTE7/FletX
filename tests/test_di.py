@@ -6,28 +6,38 @@ import pytest
 
 
 def _load_di_and_errors():
-    # Stub minimal 'fletx.utils' and 'fletx.utils.exceptions' to avoid heavy deps
-    if 'fletx' not in sys.modules:
-        sys.modules['fletx'] = types.ModuleType('fletx')
+    # Save any existing fletx modules so we can restore them
+    _saved = {}
+    for _key in ('fletx', 'fletx.utils', 'fletx.utils.exceptions'):
+        if _key in sys.modules:
+            _saved[_key] = sys.modules[_key]
 
-    utils_mod = types.ModuleType('fletx.utils')
-    # Minimal logger stub
-    class _Logger:
-        def debug(self, *args, **kwargs):
-            pass
-        def error(self, *args, **kwargs):
-            pass
-    def get_logger(_name: str):
-        return _Logger()
-    utils_mod.get_logger = get_logger
+    # Import the real modules if they exist
+    if 'fletx.utils.exceptions' in sys.modules:
+        from fletx.utils import get_logger
+        from fletx.utils.exceptions import DependencyNotFoundError
+    else:
+        # Create minimal stubs to satisfy di.py's imports
+        if 'fletx' not in sys.modules:
+            sys.modules['fletx'] = types.ModuleType('fletx')
 
-    exceptions_mod = types.ModuleType('fletx.utils.exceptions')
-    class DependencyNotFoundError(Exception):
-        pass
-    exceptions_mod.DependencyNotFoundError = DependencyNotFoundError
+        utils_mod = types.ModuleType('fletx.utils')
+        class _Logger:
+            def debug(self, *args, **kwargs): pass
+            def error(self, *args, **kwargs): pass
+        def get_logger(_name: str):
+            return _Logger()
+        utils_mod.get_logger = get_logger
 
-    sys.modules['fletx.utils'] = utils_mod
-    sys.modules['fletx.utils.exceptions'] = exceptions_mod
+        exceptions_mod = types.ModuleType('fletx.utils.exceptions')
+        class FletXError(Exception): pass
+        class _DependencyNotFoundError(FletXError): pass
+        DependencyNotFoundError = _DependencyNotFoundError
+        exceptions_mod.FletXError = FletXError
+        exceptions_mod.DependencyNotFoundError = DependencyNotFoundError
+
+        sys.modules['fletx.utils'] = utils_mod
+        sys.modules['fletx.utils.exceptions'] = exceptions_mod
 
     # Load fletx/core/di.py directly without importing package __init__
     di_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fletx', 'core', 'di.py')
@@ -36,13 +46,21 @@ def _load_di_and_errors():
     assert spec.loader is not None
     spec.loader.exec_module(module)
 
-    # Patch DI logger attribute to a simple logger to avoid @classmethod @property descriptor issues
+    # Patch DI logger attribute to avoid @classmethod @property descriptor issues
     simple_logger = get_logger("test.DI")
     try:
         module.DI._logger = simple_logger
-        module.DI.logger = simple_logger  # override descriptor on class
+        module.DI.logger = simple_logger
     except Exception:
         pass
+
+    # Restore original modules so other tests are not affected
+    sys.modules.update(_saved)
+    # Remove stub-only entries that were not in the original
+    for _key in ('fletx', 'fletx.utils', 'fletx.utils.exceptions'):
+        if _key not in _saved and _key in sys.modules:
+            del sys.modules[_key]
+
     return module.DI, DependencyNotFoundError
 
 
