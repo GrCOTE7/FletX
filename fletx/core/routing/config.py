@@ -270,8 +270,9 @@ class ModuleRouter:
         # Add routes to the config.
         self.add_routes(self.routes)
 
-        # Add subrouters 
-        self.add_subrouters(self.sub_routers)
+        # Add subrouters if defined
+        if hasattr(self, 'sub_routers') and self.sub_routers:
+            self.add_subrouters(self.sub_routers)
 
     @property
     def logger(self):
