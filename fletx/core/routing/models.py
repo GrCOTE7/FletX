@@ -9,7 +9,9 @@ from typing import (
 from fletx.core.routing.transitions import RouteTransition
 
 
-# ROUTE INFO CLASS
+####
+##      ROUTE INFO CLASS
+#####
 @dataclass
 class RouteInfo:
     """
@@ -62,7 +64,9 @@ class RouteInfo:
         return url
 
 
-# NAVIGATION INTENT TYPE CLASS
+####
+##      NAVIGATION INTENT TYPE CLASS
+#####
 @dataclass
 class NavigationIntent:
     """Intent data for navigation with additional context."""
@@ -74,7 +78,9 @@ class NavigationIntent:
     transition: Optional['RouteTransition'] = None
 
 
-# ROUTE TYPE CLASS
+####
+##     ROUTE TYPE CLASS
+#####
 class RouteType(Enum):
     """Types of routes supported by the router."""
 
@@ -85,7 +91,9 @@ class RouteType(Enum):
     MODULE = "module"       # Module route with sub-router
 
 
-# NAVIGATION MODE CLASS
+####
+##      NAVIGATION MODE CLASS
+#####
 class NavigationMode(Enum):
     """Navigation modes for handling Flet's native navigation."""
 
@@ -94,7 +102,9 @@ class NavigationMode(Enum):
     HYBRID = "hybrid"       # Combine both approaches
 
 
-# ROUTER STATE
+#####
+##      ROUTER STATE 
+#####
 @dataclass
 class RouterState:
     """Current state of the router."""
@@ -106,7 +116,9 @@ class RouterState:
     active_views: List[ft.View] = field(default_factory=list)
 
 
-# NAVIGATION RESULT
+#####
+##      NAVIGATION RESULT
+#####
 class NavigationResult(Enum):
     """Result of navigation operation."""
 
@@ -117,7 +129,9 @@ class NavigationResult(Enum):
     CANCELLED = "cancelled"
 
 
-# ROUTE RESOLVER INTERFACE
+####
+##      ROUTE RESOLVER INTERFACE
+#####
 class IRouteResolver(ABC):
     """Interface for route data resolvers."""
     

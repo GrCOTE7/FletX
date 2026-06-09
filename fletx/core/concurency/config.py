@@ -8,7 +8,9 @@ from typing import (
 # GENERIC TYPES
 T = TypeVar('T')
 
-# WORKER STATE
+####
+##      WORKER STATE
+#####
 class WorkerState(Enum):
     """Possible state of a worker"""
 
@@ -19,7 +21,9 @@ class WorkerState(Enum):
     CANCELLED = "cancelled"
 
 
-# EXECUTION PRIORITY
+####
+##      EXECUTION PRIORITY
+#####
 class Priority(Enum):
     """Task execution priority"""
 
@@ -29,7 +33,9 @@ class Priority(Enum):
     CRITICAL = 4
 
 
-# WORKER RESULT
+####
+##      WORKER RESULT
+#####
 @dataclass
 class WorkerResult(Generic[T]):
     """Worker execution result"""
@@ -42,7 +48,9 @@ class WorkerResult(Generic[T]):
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
-# WORKER POOL CONFIGURATION
+####
+##      WORKER POOL CONFIGURATION
+#####
 @dataclass
 class WorkerPoolConfig:
     """Worker Pool Configuration."""

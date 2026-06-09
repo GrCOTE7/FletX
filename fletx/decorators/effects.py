@@ -5,7 +5,7 @@ import inspect
 from fletx import FletX
 from fletx.core.effects import EffectManager
 
-# 
+####    
 def use_effect(effect_fn: Callable, dependencies: List[Any] = None):
     """Effect Decorator"""
     # Gets the effect manager instance

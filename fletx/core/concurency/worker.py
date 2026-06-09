@@ -25,7 +25,9 @@ from fletx.core.concurency.config import (
 R = TypeVar('R')
 
 
-# RUNNABLE OBJECTS PROTOCOL
+####
+##      RUNNABLE OBJECTS PROTOCOL
+#####
 @runtime_checkable
 class Runnable(Protocol):
     """Runnable objects Protocol"""
@@ -35,7 +37,9 @@ class Runnable(Protocol):
         ...
 
 
-# BASE CLASS FOR WORKERS
+####
+##      BASE CLASS FOR WORKERS
+#####
 class BaseWorker(ABC, Generic[T]):
     """Base class for all workers"""
     
@@ -115,7 +119,9 @@ class BaseWorker(ABC, Generic[T]):
         )
 
 
-# FUNCTIONS WORKER CLASS
+####
+##      FUNCTIONS WORKER CLASS
+#####
 class FunctionWorker(BaseWorker[T]):
     """Worker that wraps a function"""
     
@@ -138,7 +144,9 @@ class FunctionWorker(BaseWorker[T]):
         return self.func(*self.args, **self.kwargs)
 
 
-# RUNNABLE WORKER CLASS
+####
+##      RUNNABLE WORKER CLASS
+#####
 class RunnableWorker(BaseWorker[Any]):
     """Worker that wraps runnable object."""
     
@@ -157,7 +165,9 @@ class RunnableWorker(BaseWorker[Any]):
         return self.runnable.run()
 
 
-# WORKER POOL
+####
+##      WORKER POOL 
+#####
 class WorkerPool:
     """Thread-safe worker pool with priority management"""
     
@@ -375,7 +385,9 @@ def set_global_pool(pool: WorkerPool):
     _global_pool = pool
 
 
-# BOUND WORKER METHOD PROXY
+####
+##      BOUND WORKER METHOD PROXY
+#####
 class BoundWorkerMethod:
     """
     Proxy object that binds a `WorkerTaskWrapper` to an instance (self),
@@ -456,7 +468,9 @@ class BoundWorkerMethod:
         return getattr(self._wrapper, name)
 
 
-# WRAPPER FOR WORKER TASK
+####
+##      WRAPPER FOR WORKER TASK 
+#####
 class WorkerTaskWrapper:
     """
     Wrapper for @worker_task decorated functions.
@@ -563,7 +577,7 @@ class WorkerTaskWrapper:
         return BoundWorkerMethod(self, instance)
 
 
-# WORKER TASK DECORATOR
+####    WORKER TASK DECORATOR
 def worker_task(priority: Priority = Priority.NORMAL):
     """
     Decorator that converts a function in to a worker task
@@ -590,7 +604,7 @@ def worker_task(priority: Priority = Priority.NORMAL):
         return WorkerTaskWrapper(func, priority)
     return decorator
 
-# PARALLEL TASK DECORATOR
+####    PARALLEL TASK DECORATOR
 def parallel_task(priority: Priority = Priority.NORMAL):
     """Decorator that forces parallel eecution
     

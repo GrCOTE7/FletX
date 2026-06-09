@@ -8,7 +8,9 @@ from fletx.core.http import HTTPClient
 from fletx.utils import get_logger
 
 
-# SERVICE STATE
+####
+##      SERVICE STATE
+#####
 class ServiceState(Enum):
     """Possible state of a FleX Service"""
 
@@ -19,7 +21,9 @@ class ServiceState(Enum):
     DISPOSED = "disposed"
 
 
-# FLETX SERVICE CLASS
+####
+##      FLETX SERVICE CLASS
+#####
 class FletXService(ABC):
     """
     Base Class for all FletX based Services.
