@@ -47,8 +47,8 @@ class VersionChecker:
     # Compatibility matrix: FletX version -> supported Flet versions
     COMPATIBILITY_MATRIX = {
         "0.1.4": {
-            "flet": ">=0.28.3,<0.30.0",
-            "python": ">=3.12,<3.14"
+            "flet": ">=0.84.0,<0.90.0",
+            "python": ">=3.10,<3.14"
         },
         "0.1.3": {
             "flet": ">=0.27.0,<0.29.0",

@@ -12,7 +12,6 @@ from typing import (
 
 from fletx.core.routing.models import NavigationMode
 from fletx.core.routing.router import FletXRouter
-# from fletx.core.factory import FletXWidgetRegistry
 from fletx.utils.logger import SharedLogger
 from fletx.utils.context import AppContext
 from fletx.utils import run_async  # noqa: F401
@@ -26,9 +25,10 @@ class FletXApp:
     """FletX Application class with async/sync support"""
     
     def __init__(
-        self, 
+        self,
         initial_route: str = "/",
         navigation_mode: NavigationMode = NavigationMode.VIEWS,
+        router_backend: str = "fletx",
         theme_mode: ft.ThemeMode = ft.ThemeMode.SYSTEM,
         debug: bool = False,
         title: str = "FletX App",
@@ -42,10 +42,12 @@ class FletXApp:
     ):
         """
         Initialize the FletX application with enhanced configuration
-        
+
         Args:
             initial_route: Initial route path
             navigation_mode: router navigation mode (NATIVE, HYBRID, VIEWS)
+            router_backend: Routing engine — "fletx" (default) or "flet"
+                            (requires Flet >= 0.85.0)
             theme_mode: Theme mode (SYSTEM, LIGHT, DARK)
             debug: Enable debug mode
             title: Application title
@@ -54,11 +56,12 @@ class FletXApp:
             window_config: Window configuration dict
             on_startup: Startup hook(s)
             on_shutdown: Shutdown hook(s)
-            **kwargs: Additional arguments for ft.app()
+            **kwargs: Additional arguments for ft.run()
         """
 
         self.initial_route = initial_route
         self.navigation_mode = navigation_mode
+        self.router_backend = router_backend
         self.theme_mode = theme_mode
         self.debug = debug
         self.title = title
@@ -228,9 +231,6 @@ class FletXApp:
             # Execute startup hooks
             await self._execute_hooks(self.on_startup, "startup")
             
-            # Register widgets (if needed)
-            # FletXWidgetRegistry.register_all(page)
-            
             # Initialize App Context
             AppContext.initialize(page, self.debug)
             AppContext.set_data("logger", self.logger)
@@ -238,10 +238,20 @@ class FletXApp:
             AppContext.set_data("event_loop", self._loop_manager.loop)
             
             # Initialize Router
-            FletXRouter.initialize(
-                page, initial_route = self.initial_route
-            ).set_navigation_mode(self.navigation_mode)
-            
+            if self.router_backend == "flet":
+                from fletx.core.routing.flet_backend import FletRouterBackend
+                from fletx.core.routing.config import router_config
+                backend = FletRouterBackend(
+                    page=page,
+                    config=router_config,
+                    initial_route=self.initial_route,
+                )
+                AppContext.set_data("router_backend", backend)
+            else:
+                FletXRouter.initialize(
+                    page, initial_route=self.initial_route
+                ).set_navigation_mode(self.navigation_mode)
+
             self._is_initialized = True
             self.logger.info("FletX Application initialized successfully (async mode)")
             
