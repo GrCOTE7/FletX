@@ -61,11 +61,16 @@ class Obx(ft.Container):
         self._builder_fn = builder_fn
         self._dependencies: Set[Reactive] = set()
         self._observers: List[Observer] = []
+        self._is_mounted = False
         self._logger = get_logger("Obx")
 
         super().__init__(**kwargs)
 
-        self.content = self._build_and_track()
+        try:
+            self.content = self._build_and_track()
+        except Exception as e:
+            self._logger.error(f"Obx builder failed during init: {e}")
+            self.content = ft.Text("Obx error")
 
     # --- dependency management ------------------------------------------------
 
@@ -85,7 +90,7 @@ class Obx(ft.Container):
 
     def _rebuild(self):
         """Called when a tracked Reactive changes."""
-        if self.page is None:
+        if not self._is_mounted:
             return
         try:
             self.content = self._build_and_track()
@@ -96,9 +101,11 @@ class Obx(ft.Container):
     # --- lifecycle ------------------------------------------------------------
 
     def did_mount(self):
+        self._is_mounted = True
         super().did_mount()
 
     def will_unmount(self):
+        self._is_mounted = False
         self.dispose()
         super().will_unmount()
 
