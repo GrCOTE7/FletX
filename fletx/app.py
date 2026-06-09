@@ -3,6 +3,7 @@ FletX main entry point
 """
 
 import inspect
+import asyncio
 import atexit
 import flet as ft
 from typing import (
@@ -286,7 +287,7 @@ class FletXApp:
         """Run the application (sync mode)"""
 
         merged_kwargs = {**self.flet_kwargs, **kwargs}
-        ft.app(target=self._sync_main, **merged_kwargs)
+        ft.run(main=self._sync_main, **merged_kwargs)
 
     def run_async(self, **kwargs):  # noqa: F811
         """Run the application (async mode)"""
@@ -306,7 +307,7 @@ class FletXApp:
                 # self._loop_manager.close_loop()
         
         merged_kwargs = {**self.flet_kwargs, **kwargs}
-        ft.app(target = async_wrapper, **merged_kwargs)
+        ft.run(main = self._async_main, **merged_kwargs)
 
     def run_web(
         self, 
@@ -316,8 +317,8 @@ class FletXApp:
         """Run as web application"""
 
         merged_kwargs = {**self.flet_kwargs, **kwargs}
-        ft.app(
-            target = self._sync_main, 
+        ft.run(
+            main = self._sync_main, 
             view = ft.WEB_BROWSER, 
             host = host, 
             port = port, 
@@ -328,8 +329,8 @@ class FletXApp:
         """Run as desktop application"""
 
         merged_kwargs = {**self.flet_kwargs, **kwargs}
-        ft.app(
-            target = self._sync_main, 
+        ft.run(
+            main = self._sync_main, 
             view = ft.FLET_APP, 
             **merged_kwargs
         )
