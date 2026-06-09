@@ -17,15 +17,30 @@ Flet provides basic navigation through `page.route` and `page.go()`, but this ap
 - **Protection**: Guard sensitive routes with authentication checks
 - **History management**: Built-in back/forward navigation
 
-**Flet vs FletX comparison:**
+### Router Backend (Flet >= 0.85.0)
+
+FletX offers two rendering backends. Choose at app init:
 
 ```python
-# Flet (manual navigation)
-page.go("/settings")
+from fletx.app import FletXApp
 
-# FletX (declarative routing)
-navigate("/settings")  # Automatically handles page lifecycle
+# FletX native backend (default, works with all Flet versions)
+app = FletXApp(router_backend="fletx")
+
+# Flet ft.Router backend (requires flet >= 0.85.0)
+# Enables nested layouts with outlet, native platform transitions
+app = FletXApp(router_backend="flet")
 ```
+
+The **ft.Router backend** (`router_backend="flet"`) delegates view management to Flet's native `ft.Router` with `manage_views=True`. This gives you:
+
+- Native platform transitions (iOS swipe-back, Android back gesture)
+- Genuine nested route layouts with **outlet** support (parent shell persists while children swap)
+- Automatic `page.views` stack management
+
+The **FletX native backend** (`router_backend="fletx"`, default) handles everything directly via `page.controls` and `page.views`. All your existing code works unchanged.
+
+**Note**: The `FletXRouter` API is identical regardless of backend. You never interact with the backend directly — `navigate()`, `go_back()`, `get_instance()`, guards, middleware, and all other APIs work the same way.
 
 ---
 
@@ -232,40 +247,154 @@ class BlogPostPage(FletXPage):
 
 ---
 
-## Nested Routes
+## Nested Routes with Outlet
 
-When building apps with shared layouts (like an admin panel with a sidebar), nested routes let you reuse parent layouts while changing child content.
+When building apps with shared layouts (admin panel with sidebar, settings with tabs), **outlet routes** let the parent shell persist while children swap inside it.
+
+This feature requires the **ft.Router backend** (`router_backend="flet"`) and Flet >= 0.85.0.
+
+### Mark a route as a layout
+
+Use `outlet=True` on the parent route:
 
 ```python
-from fletx.navigation import RouteDefinition
+from fletx.core.routing.config import router_config
 
-# Parent layout with sidebar
-class AdminLayoutPage(FletXPage):
-    def build(self):
-        return ft.Row([
-            ft.Container(
-                content=ft.Text("Sidebar"),
-                width=200,
-                bgcolor=ft.colors.BLUE_GREY_100
-            ),
-            ft.Container(
-                # Child routes render here
-                expand=True
-            )
-        ])
+# The layout that persists
+router_config.add_route("/settings", SettingsShell, outlet=True)
 
-# Register parent with children
-router_config.add_route(
-    path="/admin",
-    component=AdminLayoutPage,
-    children=[
-        RouteDefinition(path="/dashboard", component=AdminDashboardPage),
-        RouteDefinition(path="/users", component=AdminUsersPage)
-    ]
-)
+# Children that render inside the layout's outlet
+router_config.add_nested_routes("/settings", [
+    {"path": "general",       "component": SettingsGeneral},
+    {"path": "profile",       "component": SettingsProfile},
+    {"path": "notifications", "component": SettingsNotifications},
+])
 ```
 
-Now navigating to `/admin/dashboard` or `/admin/users` will show the same sidebar with different content.
+### The layout page
+
+The shell page uses `self._outlet_content` to render the active child:
+
+```python
+import flet as ft
+from fletx.core import FletXPage
+from fletx.core.routing.router import FletXRouter
+
+class SettingsShell(FletXPage):
+    def build(self):
+        return ft.Row([
+            # Left: persistent navigation
+            ft.NavigationRail(
+                destinations=[
+                    ft.NavigationRailDestination(label="General"),
+                    ft.NavigationRailDestination(label="Profile"),
+                    ft.NavigationRailDestination(label="Notifications"),
+                ],
+                on_change=self._on_nav_change,
+            ),
+            ft.VerticalDivider(),
+            # Right: child content renders here
+            ft.Container(
+                content=(
+                    self._outlet_content
+                    if self._outlet_content is not None
+                    else ft.Text("Select a section")
+                ),
+                expand=True,
+                padding=20,
+            ),
+        ], expand=True)
+
+    def _on_nav_change(self, e):
+        routes = {0: "/settings/general", 1: "/settings/profile",
+                  2: "/settings/notifications"}
+        FletXRouter.get_instance().navigate_sync(
+            routes.get(e.control.selected_index, "/settings/general")
+        )
+
+    def build_app_bar(self):
+        return ft.AppBar(title=ft.Text("Settings"))
+```
+
+### Child pages
+
+Child pages are regular `FletXPage` subclasses — no special API needed:
+
+```python
+class SettingsGeneral(FletXPage):
+    def build(self):
+        return ft.Column([
+            ft.Text("General Settings", size=22),
+            ft.Switch(label="Dark mode", value=False),
+            ft.TextField(label="App title", value="My App"),
+        ])
+
+class SettingsProfile(FletXPage):
+    def build(self):
+        return ft.Column([
+            ft.Text("Profile Settings", size=22),
+            ft.TextField(label="Display name", value="John"),
+        ])
+```
+
+### How it works
+
+When you navigate to `/settings/profile`:
+
+1. The `SettingsShell` wrapper calls `ft.use_route_outlet()`, which renders the matched child (`SettingsProfile`)
+2. The child content is injected as `self._outlet_content` BEFORE `build()` runs
+3. `build()` returns the shell with the child content in the right panel
+4. Navigating to `/settings/general` re-renders ONLY the child (shell persists)
+
+An **auto-generated index child** uses the first non-outlet child's component, so navigating to `/settings` directly shows the general settings by default.
+
+### Deep nesting
+
+Outlet routes can be nested arbitrarily deep:
+
+```python
+# /admin → AdminShell
+router_config.add_route("/admin", AdminShell, outlet=True)
+router_config.add_nested_routes("/admin", [
+    {"path": "settings", "component": SettingsShell, "outlet": True},
+    {"path": "dashboard", "component": DashboardPage},
+])
+# /admin/settings → SettingsShell (nested outlet)
+router_config.add_nested_routes("/admin/settings", [
+    {"path": "general", "component": SettingsGeneral},
+    {"path": "profile", "component": SettingsProfile},
+])
+```
+
+### ModuleRouter with outlets
+
+You can declare `outlet=True` in ModuleRouter route dicts:
+
+```python
+@register_router
+class AdminRouter(ModuleRouter):
+    name = "admin"
+    base_path = "/admin"
+    is_root = False
+    routes = [
+        {"path": "/", "component": AdminShell, "outlet": True},
+        {"path": "/dashboard", "component": DashboardPage},
+        {"path": "/users", "component": UsersPage},
+    ]
+```
+
+### Synchronous navigation
+
+`FletXRouter.navigate_sync(route)` is safe to call from Flet event handlers (`on_click`, `on_change`):
+
+```python
+from fletx.core.routing.router import FletXRouter
+
+# From any FletXPage:
+FletXRouter.get_instance().navigate_sync("/settings/profile")
+```
+
+It schedules the async `navigate()` on the event loop, so you never need to manage `await` in synchronous callbacks.
 
 ---
 
