@@ -31,9 +31,7 @@ __all__ = [
 ]
 
 
-####
-##      FLETX CLI ENTRY POINT
-#####
+# FLETX CLI ENTRY POINT
 class FletXCLI:
     """
     Main CLI class that handles command routing and execution.

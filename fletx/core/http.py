@@ -27,9 +27,7 @@ from fletx.utils.exceptions import (
 logger = logging.getLogger("fletx.http")
 
 
-####
-##      FILE INFO
-#####
+# FILE INFO
 @dataclass
 class FileInfo:
     """Information about an uploaded/downloaded file"""
@@ -40,9 +38,7 @@ class FileInfo:
     field_name: Optional[str] = None
 
 
-####
-##      HTTP RESPONSE
-#####
+# HTTP RESPONSE
 @dataclass
 class HTTPResponse:
     """Structured HTTP response container"""
@@ -91,9 +87,7 @@ class HTTPResponse:
         return str(self.data)
 
 
-####
-##      UPLOAD PROGRESS
-#####
+# UPLOAD PROGRESS
 @dataclass
 class UploadProgress:
     """Progress information for file uploads"""
@@ -105,9 +99,7 @@ class UploadProgress:
     filename: str
 
 
-####
-##      DOWNLOAD PROGRESS
-#####
+# DOWNLOAD PROGRESS
 @dataclass
 class DownloadProgress:
     """Progress information for file downloads"""
@@ -119,9 +111,7 @@ class DownloadProgress:
     filename: str
 
 
-####
-##      FORM DATA CLASS
-#####
+# FORM DATA CLASS
 class FormData(aiohttp.FormData):
     """Enhanced FormData with file support"""
     
@@ -150,9 +140,7 @@ class FormData(aiohttp.FormData):
         )
 
 
-####
-##      MIDDLEWARE SYSTEM
-#####
+# MIDDLEWARE SYSTEM
 class Middleware:
     """Base middleware class"""
     
@@ -182,9 +170,7 @@ class Middleware:
         return error
 
 
-####
-##      AUTHENTICATION MIDDLEWARE
-#####
+# AUTHENTICATION MIDDLEWARE
 class AuthMiddleware(Middleware):
     """Authentication middleware"""
     
@@ -206,9 +192,7 @@ class AuthMiddleware(Middleware):
         return kwargs
 
 
-####
-##      LOGGING MIDDLEWARE
-#####
+# LOGGING MIDDLEWARE
 class LoggingMiddleware(Middleware):
     """Request/Response logging middleware"""
     
@@ -236,9 +220,7 @@ class LoggingMiddleware(Middleware):
         return response
 
 
-####
-##      MAIN HTTP CLIENT CLASS
-#####
+# MAIN HTTP CLIENT CLASS
 class HTTPClient:
     """Advanced asynchronous/synchronous HTTP client with enhanced features"""
     

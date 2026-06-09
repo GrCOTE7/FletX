@@ -13,7 +13,7 @@ from fletx.core.page import FletXPage
 from fletx.core.controller import FletXController
 
 
-####    PAGE CONTROLLER INJECTOR
+# PAGE CONTROLLER INJECTOR
 def page_controller(
     controller_class: Optional[Type[FletXController]] = None, 
     tag: str = None

@@ -10,9 +10,7 @@ from fletx.core.page import FletXPage
 from fletx.utils import get_logger
 
 
-####
-##      ROUTE CONFIG CLASS
-#####
+# ROUTE CONFIG CLASS
 class RouteConfig:
     """
     Route Configuration Manager responsible for managing route configuration.

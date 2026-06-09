@@ -18,9 +18,7 @@ from fletx.utils import run_async  # noqa: F401
 from fletx.core.concurency.event_loop import EventLoopManager
 
 
-####
-##      FLETX APPLICATION
-#####
+# FLETX APPLICATION
 class FletXApp:
     """FletX Application class with async/sync support"""
     

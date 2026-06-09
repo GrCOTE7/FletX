@@ -12,9 +12,7 @@ from fletx.core.routing.models import RouteInfo
 from fletx.utils.exceptions import NavigationAborted
 
 
-####
-##      ROUTE GUARD INTERFACE 
-#####
+# ROUTE GUARD INTERFACE
 class RouteGuard(ABC):
     """Base interface for creating route guards.
 
