@@ -79,9 +79,12 @@ See FletX in action across different platforms:
 |---------|--------|
 | **Reactive state** | Auto UI updates—no manual `page.update()` (`setState`) |
 | **Modular routing** | Deep linking, guards, middlewares, dynamic parameters |
+| **Nested outlet layouts** | Parent shell persists while children swap (requires Flet >= 0.85.0) |
+| **ft.Router integration** | Native platform transitions + `manage_views` via `router_backend="flet"` |
+| **Lifecycle-aware dialogs** | `alert()`, `confirm()`, `show_dialog()` with auto-close on unmount |
 | **Dependency injection** | Services & controllers managed elegantly |
 | **Clean architecture** | Scale from MVP to enterprise apps |
-| **Developer CLI** | 10x faster project setup & component generation |
+| **Developer CLI** | 10x faster project setup, component generation, **flet passthrough** |
 | **Type hints** | Full IDE support and runtime safety |
 
 ---

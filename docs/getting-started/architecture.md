@@ -354,7 +354,11 @@ router_config.add_routes([
     {"path": "/settings", "component": SettingsPage},
 ])
 
-app = FletXApp(title="MyApp")
+app = FletXApp(
+    title="MyApp",
+    router_backend="flet",  # ft.Router backend (nested outlets, native transitions)
+    # router_backend="fletx",  # FletX native (default, all Flet versions)
+)
 ```
 
 **app/main.py — Entry point:**
