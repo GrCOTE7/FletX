@@ -57,6 +57,7 @@ class ObxController:
             # Add to dependencies list
             self._dependencies.add(reactive_obj)
             self.logger.debug(f"Added dependency: {reactive_obj}")
+            print(f'\n\n\n {reactive_obj} {type(reactive_obj)} {self._dependencies}')
 
     def _rebuild(self):
         """Rebuild the widget when dependencies change"""
@@ -69,21 +70,23 @@ class ObxController:
             )
             return  # Prevent infinite rebuild loops
         
-        if not self._widget_ref or not self._widget_ref.current:
+        if not self._widget_ref: 
+            # self._widget_ref brings the contained widget 
+            # so no need to check self._widget_ref.current
             self.logger.warning(
                 "Skipping rebuild - widget reference not available"
             )
             return
 
-        current_widget = self._widget_ref.current
+        current_widget = self._widget_ref
 
         try:
             self._is_building = True
 
             preserved_attrs = {
                 'ref': self._widget_ref,
-                '_Control__uid': current_widget.uid,
-                '_Control__page': current_widget.page,
+                # '_Control__uid': current_widget.uid,
+                # '_Control__page': current_widget.page,
                 'did_mount': getattr(current_widget, 'did_mount', None),
                 'will_unmount': getattr(current_widget, 'will_unmount', None)
             }
@@ -93,7 +96,9 @@ class ObxController:
                 new_content = self._builder()
             
             # For other widget types, try to copy properties
-            self._copy_widget_properties(new_content, current_widget)
+            # self._copy_widget_properties(new_content, current_widget)
+            current_widget._values = new_content._values
+            print(current_widget.__dict__)
 
             # Restore preserved attributs 
             for attr, value in preserved_attrs.items():
@@ -101,8 +106,10 @@ class ObxController:
                     setattr(current_widget, attr, value)
             
             # Trigger UI update
-            if current_widget.page:
-                current_widget.update()
+            # if current_widget.page:
+            #     current_widget.update()
+            # print(current_widget.parent)
+            get_page().update(current_widget)
                 
             self.logger.debug("Widget rebuilt successfully")
             
@@ -176,7 +183,8 @@ class ObserverContext:
 ####
 ##      OBX CLASS WIDGET
 #####
-class Obx:
+# @ft.control
+class Obx(ft.LayoutControl, ft.AdaptiveControl):
     """
     Obx reactive wrapper that automatically detects Reactive 
     dependencies within its content builder and rebuilds when
@@ -189,7 +197,6 @@ class Obx:
     ):
         self.builder_fn = builder_fn
         self.controller = ObxController()
-        self._widget = None
         self.ref: Optional[Ref] = None
         self._final_uid = f"obx_{id(self)}"  
         self._is_mounted = False
@@ -197,6 +204,8 @@ class Obx:
         
         # Set up controller
         self.controller.set_builder(builder_fn)
+
+        self._build_widget()
 
     @property
     def logger(self):
@@ -214,20 +223,26 @@ class Obx:
         try:
             with ObserverContext(self.controller):
                 self._widget = self.builder_fn()
+
+            # print(self._widget.__dict__)
             
             # Set up reference for the actual widget
             if not hasattr(self._widget, 'ref') or self._widget.ref is None:
                 self.ref = Ref[Type[self._widget.__class__]]()
-                self.ref.current = self._widget
+                self._widget.ref = self.ref
+                self.ref = self._widget
 
             # Setup the wrapped widget ID
-            self._widget._Control__attrs['id'] = self._final_uid
+            # self._widget._Control__attrs['id'] = self._final_uid
+            self._final_uid = self._widget._i
+            self.is_isolated = self._widget.is_isolated
             
             # Set the widget references in controller
             self.controller.set_uid(self._final_uid)
             self.controller.set_widget_ref(self.ref)
             
-            self.logger.debug(f"Built widget: {type(self._widget).__name__} #{self._widget._id}")
+            
+            self.logger.debug(f"Built widget: {type(self._widget).__name__} #{self._widget._i}")
         
         # Error building widget
         except Exception as e:
@@ -280,21 +295,21 @@ class Obx:
             except:  # noqa: E722
                 pass
 
-    def __getattr__(self, name):
-        """Delegate attribute access to the wrapped widget"""
+    # def __getattr__(self, name):
+    #     """Delegate attribute access to the wrapped widget"""
 
-        if (
-            not hasattr(self._widget, name) 
-            or name in ['builder_fn', 'controller', 'widget', 'logger']
-        ):
-            raise AttributeError(
-                f"'{type(self._widget).__name__}' object has no attribute '{name}'"
-            )
+    #     if (
+    #         # not hasattr(self._widget, name) 
+    #         name in ['builder_fn', 'controller', 'widget', 'logger']
+    #     ):
+    #         raise AttributeError(
+    #             f"'{type(self._widget).__name__}' object has no attribute '{name}'"
+    #         )
         
-        if self._widget and hasattr(self._widget, name):
-            return getattr(self._widget, name)
+    #     if self._widget and hasattr(self._widget, name):
+    #         return getattr(self._widget, name)
         
-        raise AttributeError(
-            f"'{type(self._widget).__name__}' object has no attribute '{name}'"
-        )
+    #     raise AttributeError(
+    #         f"'{type(self._widget).__name__}' object has no attribute '{name}'"
+    #     )
     
