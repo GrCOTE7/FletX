@@ -12,9 +12,7 @@ from fletx.utils.exceptions import (
 )
 
 
-####
-##    COMMAND REGISTRY
-#####
+# COMMAND REGISTRY
 class CommandRegistry:
     """
     Registry for all commands in the FletX CLI.
@@ -43,9 +41,7 @@ class CommandRegistry:
         return list(cls._commands.values())
     
 
-####
-##    COMMAND PARSER
-#####
+# COMMAND PARSER
 class CommandParser(ArgumentParser):
     """
     Customized ArgumentParser class to improve error messages and prevent
@@ -124,9 +120,7 @@ class CommandParser(ArgumentParser):
         return super().add_subparsers(**kwargs)
 
     
-####
-##    COMMAND BASE CLASS
-#####
+# COMMAND BASE CLASS
 class BaseCommand(ABC):
     """ 
     Base class for all commands in the FletX CLI.
@@ -257,9 +251,7 @@ class BaseCommand(ABC):
         return "Missing required arguments for this command."
 
 
-####
-##      TEMPLATE COMMAND CLASS
-#####
+# TEMPLATE COMMAND CLASS
 class TemplateCommand(BaseCommand):
     """ Base class for template commands.
     Copy the template files into a specified directory.

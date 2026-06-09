@@ -1,6 +1,6 @@
 import flet as ft
 
-#### APP LIGHT THEME
+# APP LIGHT THEME
 light_theme = ft.Theme(
     color_scheme=ft.ColorScheme(
         primary="#4F46E5",        # Indigo 600 (accent color)
@@ -23,7 +23,7 @@ light_theme = ft.Theme(
 )
 
 
-#### APP DARK THEME
+# APP DARK THEME
 dark_theme = ft.Theme(
     color_scheme=ft.ColorScheme(
         primary="#4F46E5",        # Indigo 500

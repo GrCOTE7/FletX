@@ -30,9 +30,7 @@ from fletx.utils import get_logger, get_event_loop
 T = TypeVar("T")
 
 
-####
-##      CONTROLLER STATE
-#####
+# CONTROLLER STATE
 class ControllerState(Enum):
     """Lifrcycle states of a controller"""
 
@@ -42,9 +40,7 @@ class ControllerState(Enum):
     DISPOSED = "disposed"
 
 
-####
-##      CONTROLLER EVENT
-#####
+# CONTROLLER EVENT
 class ControllerEvent:
     """Represents a fletx contoller event"""
 
@@ -55,9 +51,7 @@ class ControllerEvent:
         # self.timestamp = get_event_loop().time()
 
 
-####
-##      CONTROLLER EVENT BUS
-#####
+# CONTROLLER EVENT BUS
 class EventBus:
     """Reactive Event Bus for inter-controller communication"""
 
@@ -183,9 +177,7 @@ class EventBus:
         self._last_event.dispose()
 
 
-####
-##      REACTIVE CONTEXT
-#####
+# REACTIVE CONTEXT
 class ControllerContext:
     """Reactive context with integrated state management."""
 
@@ -251,9 +243,7 @@ class ControllerContext:
         self._context.dispose()
 
 
-####
-##      FLETX BASE CONTROLLER CLASS
-#####
+# FLETX BASE CONTROLLER CLASS
 class FletXController:
     """
     Advanced Controller with Reactivity and Enhanced Features.

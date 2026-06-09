@@ -11,7 +11,6 @@ from fletx.core.routing.config import (
 )
 
 
-####    REGISTER ROUTER
 def register_router(cls: ModuleRouter):
     """Decorator that automatically registers module routes"""
     # Parent router initialization
