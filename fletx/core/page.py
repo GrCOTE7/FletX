@@ -244,26 +244,33 @@ class FletXPage(ft.Container, ABC):
     def build_navigation_widgets(self):
         """Build all needed Navigation widgets."""
 
+        try:
+            view_ref = self.view
+        except (AttributeError, IndexError, RuntimeError):
+            # View not available — backend manages navigation widgets
+            # directly on the ft.View it creates before returning.
+            return
+
         # AppBar
-        self.view.appbar = self.build_app_bar()
+        view_ref.appbar = self.build_app_bar()
 
         # Bottom AppBar
-        self.view.bottom_appbar = self.build_bottom_app_bar()
+        view_ref.bottom_appbar = self.build_bottom_app_bar()
 
         # Nav Drawer
-        self.view.drawer = self.build_drawer()
+        view_ref.drawer = self.build_drawer()
 
         # Navigation Bar
-        self.view.navigation_bar = self.build_navigation_bar()
+        view_ref.navigation_bar = self.build_navigation_bar()
 
         # Floating Action Button
-        self.view.floating_action_button = self.build_floating_action_button()
+        view_ref.floating_action_button = self.build_floating_action_button()
 
         # Floating Action Button Location
-        self.view.floating_action_button_location = self.build_floating_action_button_location()
+        view_ref.floating_action_button_location = self.build_floating_action_button_location()
 
         # End Drawer
-        self.view.end_drawer = self.build_end_drawer()
+        view_ref.end_drawer = self.build_end_drawer()
     
     # Lifecycle methods
     def before_on_init(self):

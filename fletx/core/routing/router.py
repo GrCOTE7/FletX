@@ -30,7 +30,7 @@ from fletx.utils import get_logger, get_event_loop, run_async
 class FletXRouter:
     """
     Advanced Router for FletX Framework
-    
+
     Provides comprehensive routing with:
     - Main router with sub-routers for modules
     - Nested routes support
@@ -40,19 +40,28 @@ class FletXRouter:
     - Route guards and middleware
     - Page transitions
     - Integration with Flet's native navigation
+
+    When a ``FletRouterBackend`` is provided, the router delegates
+    rendering (view management, transitions) to ``ft.Router`` while
+    retaining full control over guards, middleware, history, and
+    data resolution.
     """
-    
+
     _instance: Optional['FletXRouter'] = None
-    
+
     def __init__(
-        self, 
-        page: ft.Page, 
-        config: Optional[RouterConfig] = None
+        self,
+        page: ft.Page,
+        config: Optional[RouterConfig] = None,
+        backend=None,
     ):
         """Initialize the router with a Flet page."""
 
+        from fletx.core.routing.flet_backend import FletRouterBackend
+
         self.page = page
         self.config = config or router_config
+        self._backend: Optional[FletRouterBackend] = backend
         self.state = RouterState(
             current_route = RouteInfo(path='/'),
             navigation_mode = NavigationMode.HYBRID
@@ -60,11 +69,14 @@ class FletXRouter:
         self._resolvers: Dict[str, Callable] = {}
         self._global_guards: List[RouteGuard] = []
         self._global_middleware: List[RouteMiddleware] = []
-        
-        # Setup Flet integration
-        self._setup_flet_integration()
 
-        # setup "to" method for those who still using 
+        # Only hook Flet's native events when there is NO backend.
+        # The backend (ft.Router) manages page.on_route_change and
+        # page.on_view_pop internally via render_views().
+        if self._backend is None:
+            self._setup_flet_integration()
+
+        # setup "to" method for those who still using
         # an old version of fletx router
         self.to = self.navigate
 
@@ -224,9 +236,10 @@ class FletXRouter:
             
             # Apply transition and update UI
             await self._apply_transition_and_update(
-                component_instance, 
-                route_info, 
-                transition or self._get_default_transition(route_def)
+                component_instance,
+                route_info,
+                transition or self._get_default_transition(route_def),
+                replace = replace,
             )
         
             # Update state
@@ -266,26 +279,40 @@ class FletXRouter:
         if not self.state.history:
             self.logger.warning("No previous route in history")
             return False
-        
+
         previous_route = self.state.history.pop()
         self.state.forward_stack.append(self.state.current_route)
-        
+
+        # When a backend is active, delegate to it for rendering.
+        # ft.Router handles the view stack natively.
+        if self._backend is not None:
+            self._backend.go_back(previous_route.path)
+            self.state.current_route = previous_route
+            return True
+
         # Use async task for navigation
         run_async(
             lambda: self.navigate(previous_route.path, replace = True)
         )
         return True
-    
+
     def go_forward(self) -> bool:
         """Navigate forward in history."""
 
         if not self.state.forward_stack:
             self.logger.warning("No forward route in history")
             return False
-        
+
         forward_route = self.state.forward_stack.pop()
         self.state.history.append(self.state.current_route)
-        
+
+        # When a backend is active, navigate to the forward route.
+        if self._backend is not None:
+            run_async(
+                lambda: self.navigate(forward_route.path, replace=True)
+            )
+            return True
+
         # Use async task for navigation
         run_async(
             lambda: self.navigate(forward_route.path, replace = True)
@@ -474,19 +501,30 @@ class FletXRouter:
     
     # @worker_task(priority = Priority.CRITICAL)
     async def _apply_transition_and_update(
-        self, 
-        component: FletXPage, 
-        route_info: RouteInfo, 
-        transition: Optional[RouteTransition]
+        self,
+        component: FletXPage,
+        route_info: RouteInfo,
+        transition: Optional[RouteTransition],
+        replace: bool = False,
     ):
         """Apply transition and update the UI."""
 
         content = component
-        # print('Sortie............................')
+
+        # Delegate rendering to ft.Router backend — it handles
+        # _build_page(), View wrapping, navigation widgets, and
+        # lifecycle (did_mount/will_unmount) via use_effect hooks.
+        if self._backend is not None:
+            self._backend.navigate(
+                route_info.path, component, route_info,
+                replace=replace,
+            )
+            self.page.update()
+            return
 
         if hasattr(component, '_build_page'):
             content._build_page()
-        
+
         # Handle different navigation modes
         if self.state.navigation_mode == NavigationMode.VIEWS:
             self.logger.debug(
@@ -515,7 +553,7 @@ class FletXRouter:
             # Direct page update
             if transition and transition.type != TransitionType.NONE:
                 content = await transition.apply(
-                    self.page, 
+                    self.page,
                     [content] if not isinstance(content, list) else content,
                     current_controls
                 )
@@ -527,7 +565,7 @@ class FletXRouter:
                 self.page.add(content)
 
         self.page.update()
-        
+
         # Call lifecycle methods
         if hasattr(component, 'did_mount'):
             try:

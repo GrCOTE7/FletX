@@ -239,12 +239,38 @@ class FletXApp:
             if self.router_backend == "flet":
                 from fletx.core.routing.flet_backend import FletRouterBackend
                 from fletx.core.routing.config import router_config
+
+                # Build the rendering backend first (needs router ref
+                # for state sync, but the ref is set after router init).
                 backend = FletRouterBackend(
                     page=page,
                     config=router_config,
                     initial_route=self.initial_route,
                 )
+
+                # Create the logic-layer router with the backend attached.
+                # The router skips its own Flet event hooks because a
+                # backend is present (the backend owns page.on_route_change).
+                router = FletXRouter(
+                    page,
+                    config=router_config,
+                    backend=backend,
+                )
+                router.set_navigation_mode(self.navigation_mode)
+
+                # Wire cross-references
+                backend._fletx_router = router
+
+                # Mount the ft.Router onto the page.  Must happen AFTER
+                # router init so _sync_external_route() has a valid ref.
+                backend.mount()
+
+                # Publish both for external access
+                AppContext.set_data("router", router)
                 AppContext.set_data("router_backend", backend)
+
+                # Navigate to the initial route
+                await router.navigate(self.initial_route, replace=True)
             else:
                 FletXRouter.initialize(
                     page, initial_route=self.initial_route
