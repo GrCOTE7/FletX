@@ -5,7 +5,7 @@ FletX - A lightweight dependency injection framework inspired by GetX for Flet a
 from fletx.core.di import DI
 
 
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 
 
 # FLETX - DEPENDENCY INJECTION INTERFACE
