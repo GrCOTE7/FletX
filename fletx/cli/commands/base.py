@@ -1,3 +1,6 @@
+import os
+import sys
+import subprocess
 from argparse import (
     Namespace, ArgumentParser
 )
@@ -302,3 +305,30 @@ class TemplateCommand(BaseCommand):
         # Check if the name is too long
         if len(name) > 50:
             raise CommandExecutionError("Template name is too long.")
+
+
+# FLET PASSTHROUGH COMMAND
+class FletPassthroughCommand(BaseCommand):
+    """
+    Base class for commands that delegate to the 'flet' CLI.
+    Subclasses only need to set 'flet_subcommand' — the class will
+    pass all remaining CLI arguments straight through to 'flet <subcommand>'.
+    """
+
+    flet_subcommand: str = ""
+
+    def add_arguments(self, parser: CommandParser) -> None:
+        parser.add_argument(
+            "args", nargs="*",
+            help="Arguments passed directly to flet CLI",
+        )
+
+    def execute(self, args: Namespace) -> None:
+        cmd = [sys.executable, "-m", "flet", self.flet_subcommand, *args.args]
+        env = os.environ.copy()
+        try:
+            subprocess.run(cmd, env=env, check=False)
+        except FileNotFoundError:
+            raise CommandExecutionError(
+                "flet CLI not found. Install it with: pip install flet"
+            )

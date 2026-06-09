@@ -1,6 +1,7 @@
 from fletx.cli.commands.base import (
     CommandRegistry, CommandParser,
-    BaseCommand, TemplateCommand
+    BaseCommand, TemplateCommand,
+    FletPassthroughCommand,
 )
 from fletx.cli.commands.newproject import (
     NewProjectCommand
@@ -19,13 +20,33 @@ from fletx.cli.commands.check import (
     CheckCommand
 )
 
+from fletx.cli.commands.passthrough import (
+    BuildCommand,
+    DebugCommand,
+    PackCommand,
+    PublishCommand,
+    ServeCommand,
+    EmulatorsCommand,
+    DevicesCommand,
+    DoctorCommand,
+)
+
 __all__ = [
     'CommandRegistry',
     'CommandParser',
     'BaseCommand',
     'TemplateCommand',
+    'FletPassthroughCommand',
     'NewProjectCommand',
     'RunCommand',
     'TestCommand',
-    'CheckCommand'
+    'CheckCommand',
+    'BuildCommand',
+    'DebugCommand',
+    'PackCommand',
+    'PublishCommand',
+    'ServeCommand',
+    'EmulatorsCommand',
+    'DevicesCommand',
+    'DoctorCommand',
 ]
