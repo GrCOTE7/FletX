@@ -412,6 +412,30 @@ fletx check --json
 | `--coverage` | flag | Generate coverage report |
 | `--pdb` | flag | Debug on failure |
 
+### Flet Passthrough Commands
+
+FletX wraps all standard Flet CLI commands. These pass arguments directly to the Flet CLI:
+
+| Command | Purpose |
+|---------|---------|
+| `fletx build <target>` | Build Flet app for target platform (apk, ipa, web, etc.) |
+| `fletx debug <target>` | Debug a running Flet application |
+| `fletx pack <target>` | Package a Flet app for distribution |
+| `fletx publish <target>` | Publish app to stores |
+| `fletx serve <target>` | Start a Flet server |
+| `fletx emulators` | List available device emulators |
+| `fletx devices` | List connected development devices |
+| `fletx doctor` | Check Flet CLI environment and dependencies |
+
+Each command exposes the same flags and options as the underlying `flet` CLI. Run `fletx <command> --help` for full argument details.
+
+```bash
+# Examples
+fletx build web           # Build for web
+fletx pack --name myapp   # Package with custom name
+fletx doctor              # Check environment
+```
+
 ---
 
 ## Best Practices
