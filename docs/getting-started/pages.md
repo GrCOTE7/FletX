@@ -675,48 +675,103 @@ class GesturesPage(FletXPage):
 
 ## Dialogs and Alerts
 
+FletX provides lifecycle-aware dialog helpers. Every dialog tracks its own state and auto-closes when the page unmounts — no manual cleanup needed.
+
+### Alert
+
 ```python
-class DialogsPage(FletXPage):
+class AlertsPage(FletXPage):
     def build(self):
         return ft.Column([
-            ft.ElevatedButton("Alert", on_click=self._show_alert),
-            ft.ElevatedButton("Confirm", on_click=self._show_confirm),
-            ft.ElevatedButton("Loader", on_click=self._show_loader),
-            ft.ElevatedButton("Snackbar", on_click=self._show_snackbar)
+            ft.ElevatedButton("Show Alert", on_click=self._show_alert),
         ])
-    
+
     def _show_alert(self, e):
-        dialog = ft.AlertDialog(
-            title=ft.Text("Alert"),
-            content=ft.Text("This is an alert message"),
-            actions=[ft.TextButton("OK")]
-        )
-        self.page_instance.dialog = dialog
-        dialog.open = True
-        self.page_instance.update()
-    
-    def _show_confirm(self, e):
-        dialog = ft.AlertDialog(
-            title=ft.Text("Confirm?"),
-            content=ft.Text("Are you sure?"),
-            actions=[
-                ft.TextButton("Cancel"),
-                ft.TextButton("Yes", style=ft.ButtonStyle(color=ft.colors.RED))
-            ]
-        )
-        self.page_instance.dialog = dialog
-        dialog.open = True
-        self.page_instance.update()
-    
-    def _show_loader(self, e):
-        self.show_loader(ft.ProgressRing())
-    
-    def _show_snackbar(self, e):
-        snack = ft.SnackBar(ft.Text("Operation completed!"))
-        self.page_instance.snack_bar = snack
-        snack.open = True
-        self.page_instance.update()
+        self.alert(title="Success", message="Operation completed!")
 ```
+
+### Confirm
+
+```python
+class ConfirmPage(FletXPage):
+    def build(self):
+        return ft.Column([
+            ft.ElevatedButton("Delete", on_click=self._show_confirm),
+        ])
+
+    def _show_confirm(self, e):
+        self.confirm(
+            title="Delete item?",
+            message="This action cannot be undone.",
+            on_confirm=lambda e: print("Deleted"),
+            on_cancel=lambda e: print("Cancelled"),
+            confirm_text="Delete",
+            cancel_text="Keep",
+        )
+```
+
+### Custom Dialog
+
+```python
+    def _show_custom(self, e):
+        dialog = ft.AlertDialog(
+            title=ft.Text("Custom"),
+            content=ft.TextField(label="Enter value"),
+            actions=[
+                ft.TextButton("Cancel", on_click=lambda e: self.close_dialog()),
+                ft.FilledButton("Save", on_click=lambda e: self.close_dialog()),
+            ],
+        )
+        self.show_dialog(dialog)
+
+    def close_dialog(self):
+        super().close_dialog()  # Closes and clears tracked dialog
+```
+
+### Loader
+
+```python
+    def _show_loader(self, e):
+        self.show_loader()  # ProgressRing in a modal dialog
+
+    def _hide_loader(self, e):
+        self.hide_loader()  # Convenience alias for close_dialog()
+```
+
+### SnackBar
+
+```python
+    def _show_snackbar(self, e):
+        self.show_snack_bar("File saved!", duration=3000)
+```
+
+### Dialog lifecycle
+
+The `_current_dialog` is tracked internally and auto-closed in `did_unmount()`. You never need to manually clean up dialogs when navigating away.
+
+---
+
+## Layout Pages (`_outlet_content`)
+
+When a page is used as an `outlet=True` layout in a nested route tree (requires `router_backend="flet"`), the `_outlet_content` attribute is automatically injected with the rendered child component BEFORE `build()` runs.
+
+```python
+class SettingsShell(FletXPage):
+    def build(self):
+        return ft.Row([
+            ft.NavigationRail(destinations=[...]),
+            ft.Container(
+                content=(
+                    self._outlet_content  # Active child renders here
+                    if self._outlet_content is not None
+                    else ft.Text("No selection")
+                ),
+                expand=True,
+            ),
+        ])
+```
+
+See [Routing — Nested Routes with Outlet](routing.md#nested-routes-with-outlet) for full details.
 
 ---
 
@@ -991,6 +1046,13 @@ def user_card(self):
 | `open_drawer()` / `close_drawer()` | Drawer control |
 | `open_bottom_sheet()` | Show bottom sheet |
 | `show_loader()` | Show loading dialog |
+| `hide_loader()` | Close loading dialog |
+| `show_dialog()` | Show custom AlertDialog (lifecycle-tracked) |
+| `close_dialog()` | Close tracked dialog |
+| `alert(title, message)` | Simple alert with OK button |
+| `confirm(title, msg, on_confirm)` | Confirmation dialog |
+| `show_snack_bar(content)` | Show SnackBar notification |
+| `_outlet_content` | Child component in outlet layout (read in build()) |
 | `controller` | Business logic |
 | `watch()` | React to state changes |
 | `get_performance_stats()` | Performance info |
