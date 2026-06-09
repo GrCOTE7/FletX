@@ -48,6 +48,10 @@ class MockComponent(FletXPage):
         self.route_info = None
         self.did_mount_called = False
     
+    def build(self):
+        import flet as ft
+        return ft.Container()
+    
     def did_mount(self):
         self.did_mount_called = True
     

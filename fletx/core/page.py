@@ -101,11 +101,15 @@ class FletXPage(ft.Container, ABC):
         # self._build_page()
 
         # Initialize Container
+        try:
+            page_width = get_page().width
+        except RuntimeError:
+            page_width = None
         super().__init__(
             expand = True,
             padding = padding,
             bgcolor = bgcolor,
-            width = get_page().width,
+            width = page_width,
             **kwargs
         )
     

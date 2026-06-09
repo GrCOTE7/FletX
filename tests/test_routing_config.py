@@ -157,7 +157,9 @@ class TestRouterConfig:
 
     def test_add_module_routes(self):
         """Test adding module routes."""
+        from fletx.core.routing.config import RouterConfig
         module = Mock(spec=ModuleRouter)
+        module._config = RouterConfig()
         module.get_routes.return_value = [
             RouteDefinition(path="/mod", component=self.component)
         ]

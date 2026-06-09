@@ -154,7 +154,8 @@ class RouterConfig:
         
         for route_config in routes:
             child_path = f"{parent_path.rstrip('/')}/{route_config['path'].lstrip('/')}"
-            child_route = self.add_route(child_path, **route_config)
+            route_kwargs = {k: v for k, v in route_config.items() if k != 'path'}
+            child_route = self.add_route(child_path, **route_kwargs)
             child_route.parent = parent_route
             parent_route.children.append(child_route)
     
@@ -256,9 +257,10 @@ class ModuleRouter:
     routes: List[Dict[str,Any]] = []
     sub_routers: List['ModuleRouter']
     is_root: bool = False
-    _config: RouterConfig = RouterConfig()
 
     def __init__(self):
+        self._config = RouterConfig()
+
         # Add routes to the config.
         self.add_routes(self.routes)
 

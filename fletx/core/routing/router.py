@@ -214,7 +214,8 @@ class FletXRouter:
                 self.state.history.clear()
                 self.state.forward_stack.clear()
             elif not replace:
-                self.state.history.append(self.state.current_route)
+                if self.state.history or self.state.current_route.path != '/':
+                    self.state.history.append(self.state.current_route)
                 self.state.forward_stack.clear()
         
             # Create and setup component

@@ -800,7 +800,7 @@ class RouteTransition:
 
         if self._current_animation:
             await asyncio.sleep(self.duration / 1000)
-            self._animation_complete = True
+        self._animation_complete = True
 
 
 # Utility functions for creating common transitions
