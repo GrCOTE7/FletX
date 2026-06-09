@@ -65,9 +65,16 @@ class CommandParser(ArgumentParser):
 
         # Catch missing argument for a better error message
         if self.missing_args_message and not (
-            args or any(not arg.startswith("-") for arg in args)
+            args or any(not arg.startswith("-") for arg in args or [])
         ):
-            self.error(self.missing_args_message)
+            # Only error if the parser requires at least one positional arg
+            needs_positional = any(
+                not action.option_strings
+                and action.nargs not in ('?', '*')
+                for action in self._actions
+            )
+            if needs_positional:
+                self.error(self.missing_args_message)
         return super().parse_args(args, namespace)
 
     def error(self, message):
@@ -324,7 +331,6 @@ class FletPassthroughCommand(BaseCommand):
 
     def execute(self, args: Namespace) -> None:
         argv = [sys.argv[0], self.flet_subcommand, *self._build_flet_args(args)]
-        env = os.environ.copy()
         try:
             from flet.cli import main as flet_main
             old_argv = sys.argv
