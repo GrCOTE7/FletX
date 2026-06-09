@@ -27,7 +27,9 @@ F = TypeVar('F', bound = Callable[..., Any])
 logger = get_logger('FletX.Decorators.Reactive')
 
 
-# --- REACTIVE BATCH DECORATOR ------------------------------------------------
+####
+##      REACTIVE BATCH DECORATOR
+#####
 class BatchManager:
     """Manages batched reactive updates"""
     
@@ -57,7 +59,9 @@ class BatchManager:
 _batch_manager = BatchManager()
 
 
-# --- BATCH DECORATOR ---------------------------------------------------------
+####
+##      BATCH DECORATOR
+#####
 def reactive_batch():
     """
     Batches reactive updates to execute on the next tick.
@@ -82,7 +86,9 @@ def reactive_batch():
     return decorator
 
 
-# --- REACTIVE MEMO DECORATOR -------------------------------------------------
+####
+##      REACTIVE MEMO DECORATOR
+#####
 class ReactiveMemoryCache:
     """Cache for memoized reactive computations"""
     
@@ -116,7 +122,9 @@ class ReactiveMemoryCache:
             self.access_order.remove(key)
 
 
-# --- REACTIVE MEMO DECORATOR -------------------------------------------------
+####
+##      REACTIVE MEMO DECORATOR
+#####
 def reactive_memo(
     maxsize: int = 128,
     key_fn: Optional[Callable[..., str]] = None
@@ -184,7 +192,9 @@ def reactive_memo(
     return decorator
 
 
-# --- DEBOUNCE DECORATOR ------------------------------------------------------
+####
+##      DEBOUNCE DECORATOR
+#####
 def reactive_debounce(delay: float):
     """
     Debounces reactive updates with a specified delay.
@@ -240,7 +250,9 @@ def reactive_debounce(delay: float):
     
     return decorator
 
-# --- THROTTLE DECORATOR ------------------------------------------------------
+####
+##      THROTTLE DECORATOR
+#####
 def reactive_throttle(interval: float):
     """
     Throttles reactive updates to execute at most once per interval.
@@ -275,7 +287,9 @@ def reactive_throttle(interval: float):
     
     return decorator
 
-# --- CONDITIONAL REACTIVE DECORATOR ------------------------------------------
+####
+##      CONDITIONAL REACTIVE DECORATOR
+#####
 def reactive_when(condition: Union[Callable[[], bool], Reactive[bool]]):
     """
     Executes reactive function only when condition is True.
@@ -311,7 +325,9 @@ def reactive_when(condition: Union[Callable[[], bool], Reactive[bool]]):
     
     return decorator
 
-# --- REACTIVE SELECTOR DECORATOR ---------------------------------------------
+####
+##      REACTIVE SELECTOR DECORATOR
+#####
 def reactive_select(*reactive_props: Reactive):
     """
     Creates a selector that only triggers when specific reactive properties change.
@@ -351,7 +367,9 @@ def reactive_select(*reactive_props: Reactive):
     
     return decorator
 
-# --- REACTIVE EFFECT DECORATOR -----------------------------------------------
+####
+##      REACTIVE EFFECT DECORATOR
+#####
 def reactive_effect(
     dependencies: Optional[List[Reactive]] = None,
     auto_run: bool = True
@@ -418,7 +436,9 @@ def reactive_effect(
     
     return decorator
 
-# --- REACTIVE COMPUTED DECORATOR ---------------------------------------------
+####
+##      REACTIVE COMPUTED DECORATOR
+#####
 def reactive_computed(dependencies: Optional[List[Reactive]] = None):
     """
     Creates a computed reactive value from a function.

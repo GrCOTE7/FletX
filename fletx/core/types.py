@@ -14,7 +14,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 
 
-# --- BINDING TYPE CLASS ------------------------------------------------------
+####
+##      BINDING TYPE CLASS
+#####
 class BindingType(Enum):
     """Types of reactive bindings"""
 
@@ -24,7 +26,9 @@ class BindingType(Enum):
     COMPUTED = "computed"        # Computed from multiple reactives
 
 
-# --- BINDING CONFIGURATION CLASS ---------------------------------------------
+####
+##      BINDING CONFIGURATION CLASS
+#####
 @dataclass
 class BindingConfig:
     """Configuration for a reactive binding"""
@@ -40,7 +44,9 @@ class BindingConfig:
     throttle_ms: Optional[int] = None
 
 
-# --- COMPUTED BINDING CONFIGURATION CLASS ------------------------------------
+####
+##      COMPUTED BINDING CONFIGURATION CLASS
+#####
 @dataclass
 class ComputedBindingConfig:
     """Configuration for computed reactive bindings"""
@@ -51,7 +57,9 @@ class ComputedBindingConfig:
     on_change: Optional[Callable[[Any, Any], None]] = None
 
 
-# --- REATIVE FORM VALIDATION RULE CLASS --------------------------------------
+####
+##      REATIVE FORM VALIDATION RULE CLASS
+#####
 @dataclass
 class FormFieldValidationRule:
     """Form Field Validation rule"""

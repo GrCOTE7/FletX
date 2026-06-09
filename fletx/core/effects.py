@@ -13,7 +13,9 @@ from fletx.utils import get_logger
 # from fletx.core.state import Reactive, ReactiveDependencyTracker
 
 
-# --- EFFECT MANAGER CLASS ----------------------------------------------------
+####
+##      EFFECT MANAGER CLASS
+#####
 class EffectManager:
     """
     Centralized Effect Management.
@@ -66,7 +68,9 @@ class EffectManager:
         self._effects.clear()
 
 
-# --- EFFECT CLASS ------------------------------------------------------------
+####
+##      EFFECT CLASS
+#####
 class Effect:
     """
     Represents an individual effect

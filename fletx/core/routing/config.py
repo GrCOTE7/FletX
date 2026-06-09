@@ -20,7 +20,9 @@ from fletx.core.page import FletXPage
 from fletx.utils import get_logger
 
 
-# --- ROUTE DEFINITION CLASS --------------------------------------------------
+####
+##      ROUTE DEFINITION CLASS
+#####
 @dataclass
 class RouteDefinition:
     """Complete route definition with all metadata."""
@@ -37,7 +39,9 @@ class RouteDefinition:
     meta: Dict[str, Any] = field(default_factory=dict)
 
 
-# --- ROUTE PATTERN -----------------------------------------------------------
+####
+##      ROUTE PATTERN
+#####
 class RoutePattern:
     """Handles route pattern matching with parameters and wildcards."""
     
@@ -81,7 +85,9 @@ class RoutePattern:
         return params
 
 
-# --- ROUTE CONFIG ------------------------------------------------------------
+####
+##      ROUTE CONFIG
+#####
 class RouterConfig:
     """Advanced router configuration manager."""
     
@@ -248,7 +254,9 @@ class RouterConfig:
         return hierarchy
 
 
-# --- MODULE ROUTER (SUB-ROUTER) ----------------------------------------------
+####
+##      MODULE ROUTER (SUB-ROUTER)
+#####
 class ModuleRouter:
     """Sub-router for handling module-specific routes."""
     
