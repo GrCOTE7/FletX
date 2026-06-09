@@ -72,7 +72,7 @@ class Obx(ft.Container):
             self._logger.error(f"Obx builder failed during init: {e}")
             self.content = ft.Text("Obx error")
 
-    # --- dependency management ------------------------------------------------
+    # Dependency management
 
     def _add_dependency(self, reactive_obj: Reactive):
         if reactive_obj not in self._dependencies:
@@ -81,7 +81,7 @@ class Obx(ft.Container):
             if observer is not None:
                 self._observers.append(observer)
 
-    # --- build / rebuild ------------------------------------------------------
+    # Build / rebuild
 
     def _build_and_track(self) -> ft.Control:
         """Run the builder inside a tracking context and return the result."""
@@ -98,7 +98,7 @@ class Obx(ft.Container):
         except Exception as e:
             self._logger.error(f"Obx rebuild failed: {e}")
 
-    # --- lifecycle ------------------------------------------------------------
+    # Lifecycle
 
     def did_mount(self):
         self._is_mounted = True
