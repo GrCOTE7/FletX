@@ -258,6 +258,9 @@ class FletXApp:
                 )
                 router.set_navigation_mode(self.navigation_mode)
 
+                # Register as the global singleton so get_instance() works.
+                FletXRouter._instance = router
+
                 # Wire cross-references
                 backend._fletx_router = router
 

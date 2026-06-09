@@ -28,6 +28,7 @@ class RouteDefinition:
     path: str
     component: Union[Type, Callable]
     route_type: RouteType = RouteType.PAGE
+    outlet: bool = False
     guards: List['RouteGuard'] = field(default_factory=list)
     middleware: List['RouteMiddleware'] = field(default_factory=list)
     data: Dict[str, Any] = field(default_factory=dict)
@@ -100,6 +101,7 @@ class RouterConfig:
         component: Union[Type[FletXPage], Callable],
         *,
         route_type: RouteType = RouteType.PAGE,
+        outlet: bool = False,
         guards: List[RouteGuard] = None,
         middleware: List[RouteMiddleware] = None,
         data: Dict = None,
@@ -113,6 +115,7 @@ class RouterConfig:
             path = path,
             component = component,
             route_type = route_type,
+            outlet = outlet,
             guards = guards or [],
             middleware = middleware or [],
             data = data or {},
@@ -160,14 +163,23 @@ class RouterConfig:
             parent_route.children.append(child_route)
     
     def add_module_routes(
-        self, 
-        base_path: str, 
+        self,
+        base_path: str,
         module_router: 'ModuleRouter'
     ) -> None:
         """Add routes from a module router."""
 
         self._modules[base_path] = module_router
-        
+
+        # First pass: identify an outlet=True parent among the module
+        # routes so child routes can reference it.
+        parent_route = None
+        for route in module_router.get_routes():
+            if getattr(route, 'outlet', False):
+                full_path = f"{base_path.rstrip('/')}/{route.path.lstrip('/')}"
+                parent_route = self.get_route(full_path)
+                break
+
         # Register module routes with base path prefix
         for route in module_router.get_routes():
             # build full path
@@ -181,11 +193,18 @@ class RouterConfig:
                 path = full_path,
                 component = route.component,
                 route_type = RouteType.MODULE,
+                outlet = getattr(route, 'outlet', False),
                 guards = route.guards,
                 middleware = route.middleware,
                 data = route.data,
                 meta = route.meta
             )
+
+            # Set parent reference for non-outlet child routes
+            if parent_route is not None and not module_route.outlet:
+                module_route.parent = parent_route
+                parent_route.children.append(module_route)
+
             self._routes[full_path] = module_route
 
             # Add subrouter patterns too

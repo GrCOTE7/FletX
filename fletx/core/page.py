@@ -65,6 +65,11 @@ class FletXPage(ft.Container, ABC):
         self._state = PageState.INITIALIZING
         self._safe_area = safe_area
         self._auto_dispose_controllers = auto_dispose_controllers
+
+        # Outlet support — injected by the rendering backend when this
+        # page is used as an outlet=True layout route.  Contains the
+        # rendered child ft.Control from ft.use_route_outlet().
+        self._outlet_content: Optional[ft.Control] = None
         
         # Event handlers storage
         self._event_handlers: Dict[str, List[Callable]] = {}
@@ -246,7 +251,7 @@ class FletXPage(ft.Container, ABC):
 
         try:
             view_ref = self.view
-        except (AttributeError, IndexError, RuntimeError):
+        except (AttributeError, IndexError, RuntimeError, TypeError):
             # View not available — backend manages navigation widgets
             # directly on the ft.View it creates before returning.
             return

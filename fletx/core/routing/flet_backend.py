@@ -108,7 +108,7 @@ class FletRouterBackend:
         """
         self._ensure_router()
 
-    def navigate(
+    async def navigate(
         self,
         route: str,
         instance: FletXPage,
@@ -146,7 +146,7 @@ class FletRouterBackend:
             if replace:
                 self.page.navigate(route)
             else:
-                self.page.push_route(route)
+                await self.page.push_route(route)
         finally:
             self._navigating = False
 
@@ -177,24 +177,7 @@ class FletRouterBackend:
             return
 
         all_routes = self._config.get_all_routes()
-        flet_routes = []
-
-        for full_path, route_def in all_routes.items():
-            component_cls = route_def.component
-            if full_path == "/":
-                flet_routes.append(
-                    ft.Route(
-                        index=True,
-                        component=self._make_wrapper(full_path, component_cls),
-                    )
-                )
-            else:
-                flet_routes.append(
-                    ft.Route(
-                        path=full_path.lstrip("/"),
-                        component=self._make_wrapper(full_path, component_cls),
-                    )
-                )
+        flet_routes = self._build_flet_routes(all_routes)
 
         @ft.component
         def _router_component():
@@ -220,6 +203,165 @@ class FletRouterBackend:
         _logger.info(
             "Flet Router backend mounted (%d routes)", len(flet_routes)
         )
+
+    def _build_flet_routes(self, routes_dict: Dict[str, Any]) -> list:
+        """
+        Convert the flat ``RouterConfig`` routes into a nested
+        ``ft.Route`` tree.
+
+        Routes with ``outlet=True`` and ``children`` become layout
+        routes.  Each such parent gets an auto-generated ``index=True``
+        child (using the first real child's component) so navigating to
+        the parent URL shows a default view inside the outlet.
+
+        Routes without ``outlet=True`` that have children are treated
+        as flat, independent entries (backward-compatible with the
+        traditional FletX flat routing model).
+        """
+        # Partition routes
+        root_routes: Dict[str, Any] = {}     # path → RouteDefinition (no parent)
+        child_map: Dict[str, list] = {}      # parent_path → [RouteDefinition]
+
+        for path, route_def in routes_dict.items():
+            if route_def.parent is not None:
+                child_map.setdefault(route_def.parent.path, []).append(route_def)
+            else:
+                root_routes[path] = route_def
+
+        # Also ensure children declared via RouteDefinition.children are
+        # present in child_map (ModuleRouter routes added via
+        # add_module_routes may set children but not parent references).
+        for path, route_def in routes_dict.items():
+            for child_def in route_def.children:
+                child_map.setdefault(path, []).append(child_def)
+
+        processed = set()
+        flet_routes = []
+
+        for path, route_def in root_routes.items():
+            ft_route = self._convert_route(
+                full_path=path,
+                flet_path=path.lstrip("/") if path != "/" else "",
+                route_def=route_def,
+                child_map=child_map,
+                processed=processed,
+            )
+            if ft_route is not None:
+                flet_routes.append(ft_route)
+
+        # Any remaining routes that were children of non-outlet parents
+        # (or ModuleRouter routes without parent references) — add as
+        # flat, standalone top-level entries.
+        for path, route_def in routes_dict.items():
+            if path in processed:
+                continue
+            if route_def.component is None:
+                continue
+            if path == "/":
+                ft_route = ft.Route(
+                    index=True,
+                    component=self._make_wrapper(path, route_def.component),
+                )
+            else:
+                ft_route = ft.Route(
+                    path=path.lstrip("/"),
+                    component=self._make_wrapper(path, route_def.component),
+                )
+            flet_routes.append(ft_route)
+            processed.add(path)
+
+        return flet_routes
+
+    def _convert_route(
+        self,
+        full_path: str,
+        flet_path: str,
+        route_def,
+        child_map: Dict[str, list],
+        processed: set,
+    ):
+        """
+        Recursively convert a ``RouteDefinition`` into an ``ft.Route``.
+
+        ``full_path`` is the absolute FletX route (e.g. ``"/settings"``).
+        ``flet_path`` is the path segment relative to the parent in the
+        ``ft.Route`` tree (e.g. ``"settings"``).
+
+        Outlet parents produce a tree with children; leaf routes produce
+        a simple ``ft.Route``.
+        """
+        if full_path in processed:
+            return None
+        processed.add(full_path)
+
+        children = child_map.get(full_path, [])
+
+        if children and route_def.outlet:
+            # Outlet layout route — children render inside the outlet
+            child_routes = []
+            index_component = None
+            first_child_component = None
+
+            for child_def in children:
+                # Compute the path segment relative to this parent
+                child_flet_path = _relative_flet_path(
+                    child_def.path, full_path
+                )
+                child_ft = self._convert_route(
+                    full_path=child_def.path,
+                    flet_path=child_flet_path,
+                    route_def=child_def,
+                    child_map=child_map,
+                    processed=processed,
+                )
+                if child_ft is not None:
+                    child_routes.append(child_ft)
+                    if first_child_component is None:
+                        first_child_component = child_def.component
+                    # Use the first non-outlet child's component for the
+                    # auto-generated index route (the default view when
+                    # navigating to the parent URL with no further path).
+                    if index_component is None and not child_def.outlet:
+                        index_component = child_def.component
+
+            # Auto-generate an index child so navigating to the parent
+            # URL shows a default view inside the outlet.  Falls back
+            # to the first child's component if all children are outlets.
+            if index_component is None and first_child_component is not None:
+                index_component = first_child_component  # pragma: no cover
+
+            if index_component is not None:
+                child_routes.insert(
+                    0,
+                    ft.Route(
+                        index=True,
+                        component=self._make_wrapper(
+                            full_path, index_component,
+                        ),
+                    ),
+                )
+
+            parent_seg = None if full_path == "/" else flet_path
+            return ft.Route(
+                path=parent_seg,
+                outlet=True,
+                component=self._make_wrapper(
+                    full_path, route_def.component, outlet_parent=True,
+                ),
+                children=child_routes,
+            )
+        else:
+            # Leaf route (or parent without outlet)
+            if full_path == "/":
+                return ft.Route(
+                    index=True,
+                    component=self._make_wrapper(full_path, route_def.component),
+                )
+            seg = None if full_path == "/" else flet_path
+            return ft.Route(
+                path=seg,
+                component=self._make_wrapper(full_path, route_def.component),
+            )
 
     def _sync_external_route(self, new_route: str):
         """
@@ -247,7 +389,9 @@ class FletRouterBackend:
 
     # ── component wrapper ────────────────────────────────────────────
 
-    def _make_wrapper(self, route_key: str, component_cls):
+    def _make_wrapper(
+        self, route_key: str, component_cls, *, outlet_parent: bool = False,
+    ):
         """
         Create an ``@ft.component`` wrapper for a route.
 
@@ -256,14 +400,22 @@ class FletRouterBackend:
            (put there by ``navigate()``).
         2. Falls back to creating a fresh instance (for back navigation
            where the component was not pre-built by FletXRouter).
-        3. Wraps the instance in an ``ft.View`` and builds navigation
-           widgets (app bar, drawer, FAB, etc.).
-        4. Hooks ``did_mount`` / ``will_unmount`` lifecycle via
+        3. For *outlet_parent* routes, calls ``use_route_outlet()`` and
+           injects the child content as ``_outlet_content`` so the page
+           can include it in ``build()``.
+        4. Wraps the instance in an ``ft.View`` and builds navigation
+           widgets.
+        5. Hooks ``did_mount`` / ``will_unmount`` lifecycle via
            ``use_effect``.
         """
 
         @ft.component
         def _wrapper(key=route_key, cls=component_cls, backend=self):
+            # Resolve child content for outlet parent routes
+            outlet_content = None
+            if outlet_parent:
+                outlet_content = ft.use_route_outlet()
+
             # Pre-created instance from FletXRouter.navigate()
             pending = backend._pending_instances.pop(key, None)
 
@@ -274,6 +426,11 @@ class FletRouterBackend:
                 # Back navigation or initial mount — create fresh
                 instance = cls()
                 instance.route_info = RouteInfo(path=key)
+
+            # Inject outlet content BEFORE _build_page() so the page's
+            # build() method can access it via self._outlet_content.
+            if outlet_content is not None:
+                instance._outlet_content = outlet_content
 
             # Build page content.  _build_page() internally calls
             # build_navigation_widgets() which is now safe to run
@@ -302,6 +459,13 @@ class FletRouterBackend:
 
 
 # ── helpers ────────────────────────────────────────────────────────
+
+
+def _relative_flet_path(child_full: str, parent_full: str) -> str:
+    """Compute the relative ``ft.Route`` path segment for a child route."""
+    if parent_full == "/":
+        return child_full.lstrip("/")
+    return child_full[len(parent_full):].lstrip("/")
 
 
 def _apply_nav_widgets(view: ft.View, instance: FletXPage):

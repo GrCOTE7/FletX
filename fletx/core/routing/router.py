@@ -80,6 +80,17 @@ class FletXRouter:
         # an old version of fletx router
         self.to = self.navigate
 
+    def navigate_sync(self, route: str, **kwargs) -> None:
+        """
+        Synchronous wrapper around :meth:`navigate`.
+
+        Safe to call from Flet event handlers (``on_click``,
+        ``on_change``, etc.) which run on the sync event dispatch
+        thread.  Internally schedules the async ``navigate()`` on the
+        event loop via ``run_async()``.
+        """
+        run_async(lambda: self.navigate(route, **kwargs))
+
     @property
     def logger(cls):
         return get_logger('FletXRouter')
@@ -515,7 +526,7 @@ class FletXRouter:
         # _build_page(), View wrapping, navigation widgets, and
         # lifecycle (did_mount/will_unmount) via use_effect hooks.
         if self._backend is not None:
-            self._backend.navigate(
+            await self._backend.navigate(
                 route_info.path, component, route_info,
                 replace=replace,
             )
