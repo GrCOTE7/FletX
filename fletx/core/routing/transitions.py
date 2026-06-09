@@ -13,9 +13,7 @@ from typing import List, Optional, Dict, Any, Callable
 from fletx.utils import get_logger, ui_friendly_sleep
 
 
-####
-##      TRANSITION TYPE
-#####
+# --- TRANSITION TYPE ---------------------------------------------------------
 class TransitionType(enum.Enum):
     """Supported transition types."""
 
@@ -44,9 +42,7 @@ class TransitionType(enum.Enum):
     CUSTOM = "custom"
 
 
-####
-##      TRANSITION DIRECTION
-#####
+# --- TRANSITION DIRECTION ----------------------------------------------------
 class TransitionDirection(enum.Enum):
     """Direction for directional transitions."""
 
@@ -56,9 +52,7 @@ class TransitionDirection(enum.Enum):
     DOWN = "down"
 
 
-####
-##      EASING FUNCTION CHOICES
-#####
+# --- EASING FUNCTION CHOICES -------------------------------------------------
 class EasingFunction(enum.Enum):
     """Easing functions for smooth animations."""
 
@@ -73,9 +67,7 @@ class EasingFunction(enum.Enum):
     CUBIC_BEZIER = "cubicBezier"
 
 
-####
-##      ROUTE TRANSITION
-#####
+# --- ROUTE TRANSITION --------------------------------------------------------
 class RouteTransition:
     """
     Route transition configuration and execution.

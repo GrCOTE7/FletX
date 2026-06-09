@@ -10,9 +10,7 @@ import flet as ft
 import threading
 from typing import Optional, Dict, Any
 
-####
-##      FLETX APPLICATION CONTEXT
-#####
+# --- FLETX APPLICATION CONTEXT -----------------------------------------------
 class AppContext:
     """
     Global context of the FletX application.

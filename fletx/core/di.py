@@ -14,9 +14,7 @@ from fletx.utils.exceptions import DependencyNotFoundError
 T = TypeVar('T')
 
 
-####
-##      DEPENDENCY INJECTOR CLASS
-#####
+# --- DEPENDENCY INJECTOR CLASS -----------------------------------------------
 class DI:
     """
     Dependency Injection Container.

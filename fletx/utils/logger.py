@@ -9,9 +9,7 @@ import threading
 from typing import Optional
 
 
-####
-##      FLETX SHARED LOGGER CLASS
-#####
+# --- FLETX SHARED LOGGER CLASS -----------------------------------------------
 class SharedLogger:
     """FletX Shared Logger."""
     

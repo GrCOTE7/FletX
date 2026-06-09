@@ -28,9 +28,7 @@ from fletx.utils import get_logger #, get_page
 logger = get_logger("FletX.WidgetDecorators")
 
 
-####
-##      REACTIVE BUILDER DECORATOR
-#####
+# --- REACTIVE BUILDER DECORATOR ----------------------------------------------
 def obx(
         builder_fn: Callable[...,Union[ft.Control,List[ft.Control]]]
     ) -> Callable[[], ft.Control]:
@@ -71,9 +69,7 @@ def obx(
     return wrapper
 
 
-####
-##      REACTIVE CONTROL DECORATOR
-#####
+# --- REACTIVE CONTROL DECORATOR ----------------------------------------------
 def reactive_control(
     bindings: Union[Dict[str, Union[str, BindingConfig]], Dict[str, str]] = None,
     computed_bindings: Dict[str, ComputedBindingConfig] = None,
@@ -461,9 +457,7 @@ def reactive_control(
     return decorator
 
 
-####
-##      CONVENIENCE DECORATOR
-#####
+# --- CONVENIENCE DECORATOR ---------------------------------------------------
 def simple_reactive(bindings: Dict[str, str]):
     """
     Simplified version of reactive_control for basic bindings.
@@ -481,9 +475,7 @@ def simple_reactive(bindings: Dict[str, str]):
     return reactive_control(bindings=bindings)
 
 
-####
-##      TWO WAY REACTIVE DECORATOR
-#####
+# --- TWO WAY REACTIVE DECORATOR ----------------------------------------------
 def two_way_reactive(bindings: Dict[str, str]):
     """
     Creates two-way reactive bindings.
@@ -507,9 +499,7 @@ def two_way_reactive(bindings: Dict[str, str]):
     return reactive_control(bindings=binding_configs)
 
 
-####
-##      COMPUTED REACTIVE WIDGET DECORATOR
-#####
+# --- COMPUTED REACTIVE WIDGET DECORATOR --------------------------------------
 def computed_reactive(**computed_props):
     """
     Creates reactive controls with computed properties.
@@ -536,9 +526,7 @@ def computed_reactive(**computed_props):
     return reactive_control(computed_bindings=computed_bindings)
 
 
-####
-##      REACTIVE FORM DECORATOR
-#####
+# --- REACTIVE FORM DECORATOR -------------------------------------------------
 def reactive_form(
     form_fields: Dict[str, str],
     validation_rules: Optional[Dict[str,Union[str,List[FormFieldValidationRule]]]] = None,
@@ -813,9 +801,7 @@ def reactive_form(
     return decorator
 
 
-####
-##      REACTIVE LIST WIDGET DECORATOR
-#####
+# --- REACTIVE LIST WIDGET DECORATOR ------------------------------------------
 def reactive_list(
     items_attr: str,
     item_builder: Callable[[Any, int], ft.Control],
@@ -941,9 +927,7 @@ def reactive_list(
     return decorator
 
 
-####
-##      REACTIVE STATE MACHINE DECORATOR
-####
+# --- REACTIVE STATE MACHINE DECORATOR ----------------------------------------
 def reactive_state_machine(
     states: Enum,
     initial_state: Enum,

@@ -8,9 +8,7 @@ from fletx.core.di import DI
 __version__ = "0.1.4"
 
 
-####
-##    FLETX - DEPENDENCY INJECTION INTERFACE
-####
+# --- FLETX - DEPENDENCY INJECTION INTERFACE ----------------------------------
 class FletX:
     """FletX Dependency Injection Interface
     This class provides a simple interface to interact with the Dependency Injection (DI) container.

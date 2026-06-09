@@ -24,9 +24,7 @@ from enum import Enum
 T = TypeVar('T', bound=FletXController)
 
 
-####
-##      FLETX PAGE STATES
-#####
+# --- FLETX PAGE STATES -------------------------------------------------------
 class PageState(Enum):
     """Enum for page lifecycle states"""
 
@@ -38,9 +36,7 @@ class PageState(Enum):
     DISPOSED = "disposed"
 
 
-####
-##      FLETX ENHANCED PAGE CLASS
-#####
+# --- FLETX ENHANCED PAGE CLASS -----------------------------------------------
 class FletXPage(ft.Container, ABC):
     """
     Enhanced base class for FletX pages that inherits from ft.Container.

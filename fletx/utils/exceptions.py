@@ -3,72 +3,56 @@ FletX Exceptions
 These exceptions provide better error handling and user feedback.
 """
 
-####
-##      BASE EXCEPTION CLASS
-#####
+# --- BASE EXCEPTION CLASS ----------------------------------------------------
 class FletXError(Exception):
     """Base exception for FletX"""
 
     pass
 
 
-####
-##      ROUTE NOT FOUND EXCEPTION CLASS
-#####
+# --- ROUTE NOT FOUND EXCEPTION CLASS -----------------------------------------
 class RouteNotFoundError(FletXError):
     """Exception raised when a route is not found"""
 
     pass
 
 
-####
-##      NAVIGATION EXCEPTION CLASS
-#####
+# --- NAVIGATION EXCEPTION CLASS ----------------------------------------------
 class NavigationError(FletXError):
     """Exception raised on navigation errors"""
 
     pass
 
 
-####
-##      NAVIGATION ABORTED EXCEPTION CLASS
-#####
+# --- NAVIGATION ABORTED EXCEPTION CLASS --------------------------------------
 class NavigationAborted(FletXError):
     """Exception raised when navigation is cancelled"""
 
     pass
 
 
-####
-##      DEPENDENCY NOT FOUND EXCEPTION CLASS
-#####
+# --- DEPENDENCY NOT FOUND EXCEPTION CLASS ------------------------------------
 class DependencyNotFoundError(FletXError):
     """Exception raised when a dependency is not found"""
 
     pass
 
 
-####
-##      CONTROLLER EXCEPTION CLASS
-#####
+# --- CONTROLLER EXCEPTION CLASS ----------------------------------------------
 class ControllerError(FletXError):
     """Exception related to controllers"""
 
     pass
 
 
-####
-##      STATE EXCEPTION CLASS
-#####
+# --- STATE EXCEPTION CLASS ---------------------------------------------------
 class StateError(FletXError):
     """Exception related to state management"""
 
     pass
 
 
-####
-##      VALIDATION EXCEPTION CLASS
-#####
+# --- VALIDATION EXCEPTION CLASS ----------------------------------------------
 class ValidationError(FletXError):
     """
     Exception raised when validation fails.
@@ -77,9 +61,7 @@ class ValidationError(FletXError):
     pass
 
 
-####
-##      CONFIGURATION EXCEPTION CLASS
-#####
+# --- CONFIGURATION EXCEPTION CLASS -------------------------------------------
 class ConfigurationError(FletXError):
     """
     Exception raised when there's an error with configuration.
@@ -89,18 +71,14 @@ class ConfigurationError(FletXError):
 
 
 
-####
-##      BASE CLI EXCEPTION CLASS
-#####
+# --- BASE CLI EXCEPTION CLASS ------------------------------------------------
 class FletXCLIError(FletXError):
     """Base class for all errors related to the Breeze CLI."""
 
     pass
 
 
-####
-##      COMMAND EXCEPTION CLASS
-#####
+# --- COMMAND EXCEPTION CLASS -------------------------------------------------
 class CommandError(FletXCLIError):
     """
     Exception raised when there's an error with command arguments or setup.
@@ -112,9 +90,7 @@ class CommandError(FletXCLIError):
         super().__init__(*args, **kwargs)
 
 
-####
-##      COMMAND NOT FOUND EXCEPTION CLASS
-#####
+# --- COMMAND NOT FOUND EXCEPTION CLASS ---------------------------------------
 class CommandNotFoundError(CommandError):
     """
     Exception raised when a requested command is not found in the registry.
@@ -123,9 +99,7 @@ class CommandNotFoundError(CommandError):
     pass
         
 
-####
-##      COMMAND EXECUTION ERROR CLASS
-#####
+# --- COMMAND EXECUTION ERROR CLASS -------------------------------------------
 class CommandExecutionError(CommandError):
     """
     Exception raised when a command fails during execution.
@@ -135,9 +109,7 @@ class CommandExecutionError(CommandError):
     pass
 
 
-####
-##      TEMPLATE ERROR CLASS
-#####
+# --- TEMPLATE ERROR CLASS ----------------------------------------------------
 class TemplateError(FletXCLIError):
     """
     Exception raised when there's an error with template processing.
@@ -146,9 +118,7 @@ class TemplateError(FletXCLIError):
     pass
 
 
-####
-##      PROJECT ERROR CLASS
-#####
+# --- PROJECT ERROR CLASS -----------------------------------------------------
 class ProjectError(FletXCLIError):
     """
     Exception raised when there's an error with project operations.
@@ -157,9 +127,7 @@ class ProjectError(FletXCLIError):
     pass
 
 
-####
-##      NETWORK ERROE CLASS
-#####
+# --- NETWORK ERROE CLASS -----------------------------------------------------
 class NetworkError(FletXError):
     """
     Exception raised when there's a network error with http operations.
@@ -167,9 +135,7 @@ class NetworkError(FletXError):
     pass
 
 
-####
-##      RATELIMOT ERROR CLASS
-#####
+# --- RATELIMOT ERROR CLASS ---------------------------------------------------
 class RateLimitError(FletXError):
     """
     Exception raised when there's a rate limit error with http operations.
@@ -177,9 +143,7 @@ class RateLimitError(FletXError):
     pass
 
 
-####
-##      API ERROR CLASS
-#####
+# --- API ERROR CLASS ---------------------------------------------------------
 class APIError(FletXError):
     """
     Exception raised when there's an API error with http operations.
