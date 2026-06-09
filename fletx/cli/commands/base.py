@@ -1,6 +1,4 @@
-import os
 import sys
-import subprocess
 from argparse import (
     Namespace, ArgumentParser
 )
@@ -325,12 +323,17 @@ class FletPassthroughCommand(BaseCommand):
         return []
 
     def execute(self, args: Namespace) -> None:
-        cmd = [sys.executable, "-m", "flet", self.flet_subcommand]
-        cmd.extend(self._build_flet_args(args))
+        argv = [sys.argv[0], self.flet_subcommand, *self._build_flet_args(args)]
         env = os.environ.copy()
         try:
-            subprocess.run(cmd, env=env, check=False)
-        except FileNotFoundError:
+            from flet.cli import main as flet_main
+            old_argv = sys.argv
+            sys.argv = argv
+            try:
+                sys.exit(flet_main())
+            finally:
+                sys.argv = old_argv
+        except ImportError:
             raise CommandExecutionError(
                 "flet CLI not found. Install it with: pip install flet"
             )
