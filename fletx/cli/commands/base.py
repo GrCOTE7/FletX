@@ -311,20 +311,22 @@ class TemplateCommand(BaseCommand):
 class FletPassthroughCommand(BaseCommand):
     """
     Base class for commands that delegate to the 'flet' CLI.
-    Subclasses only need to set 'flet_subcommand' — the class will
-    pass all remaining CLI arguments straight through to 'flet <subcommand>'.
+    Subclasses set 'flet_subcommand' and define both add_arguments()
+    and _build_flet_args() to convert the parsed Namespace into a
+    list of CLI arguments for flet.
     """
 
     flet_subcommand: str = ""
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument(
-            "args", nargs="*",
-            help="Arguments passed directly to flet CLI",
-        )
+        pass
+
+    def _build_flet_args(self, args: Namespace) -> list[str]:
+        return []
 
     def execute(self, args: Namespace) -> None:
-        cmd = [sys.executable, "-m", "flet", self.flet_subcommand, *args.args]
+        cmd = [sys.executable, "-m", "flet", self.flet_subcommand]
+        cmd.extend(self._build_flet_args(args))
         env = os.environ.copy()
         try:
             subprocess.run(cmd, env=env, check=False)
