@@ -20,7 +20,7 @@ class EventLoopManager:
         """Get the global event loop, creating it if necessary"""
 
         if self._loop is None or self._loop.is_closed():
-            self._loop = asyncio.new_event_loop()
+            self._loop = asyncio.get_event_loop()
             self._loop_owner = True
             asyncio.set_event_loop(self._loop)
         return self._loop
